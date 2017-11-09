@@ -5,20 +5,20 @@
 %%% @end
 %%%-------------------------------------------------------------------
 
--module(rev_erlang).
+-module(cauder).
 -export([start/0,
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
          eval_roll/3]).
 
--include("rev_erlang.hrl").
+-include("cauder.hrl").
 
 %%--------------------------------------------------------------------
 %% @doc Starts the GUI
 %% @end
 %%--------------------------------------------------------------------
 start() ->
-  rev_erlang_gui:setup_gui(),
+  cauder_gui:setup_gui(),
   ok.
 
 %%--------------------------------------------------------------------

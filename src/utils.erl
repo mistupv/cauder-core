@@ -15,7 +15,7 @@
          has_fwd/1, has_bwd/1, has_norm/1,
          is_queue_minus_msg/3, topmost_rec/1]).
 
--include("rev_erlang.hrl").
+-include("cauder.hrl").
 
 %%--------------------------------------------------------------------
 %% @doc Searches a function definition in FunDefs with name FunName

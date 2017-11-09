@@ -9,7 +9,7 @@
 -export([eval_step/2, eval_sched/2, eval_opts/1,
          eval_procs_opts/1, eval_sched_opts/1]).
 
--include("rev_erlang.hrl").
+-include("cauder.hrl").
 
 %%--------------------------------------------------------------------
 %% @doc Performs an evaluation step in process Pid, given System

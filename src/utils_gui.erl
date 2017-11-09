@@ -6,8 +6,8 @@
          sttext_single/1, sttext_mult/2, sttext_norm/1,
          prev_font_size/1, next_font_size/1, sort_opts/1]).
 
--include("rev_erlang.hrl").
--include("rev_erlang_gui.hrl").
+-include("cauder.hrl").
+-include("cauder_gui.hrl").
 -include_lib("wx/include/wx.hrl").
 
 is_app_loaded() ->
@@ -114,7 +114,7 @@ set_choices(Choices) ->
 stop_refs() ->
   case is_app_running() of
     true ->
-      rev_erlang:stop_refs(),
+      cauder:stop_refs(),
       ok;
     false -> ok
   end.

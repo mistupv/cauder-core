@@ -6,7 +6,7 @@
 -module(roll).
 -export([can_roll/2, eval_step/2]).
 
--include("rev_erlang.hrl").
+-include("cauder.hrl").
 
 can_roll(#sys{procs = Procs}, Pid) ->
   case utils:pid_exists(Procs, Pid) of
@@ -34,7 +34,7 @@ eval_step(System, Pid) ->
       roll_spawn(System, Pid, SpawnPid);
     _ ->
       RollOpts = roll_opts(System, Pid),
-      rev_erlang:eval_step(System, hd(RollOpts))
+      cauder:eval_step(System, hd(RollOpts))
   end.
 
 roll_send(System, Pid, OtherPid, Time) ->
@@ -49,11 +49,11 @@ roll_send(System, Pid, OtherPid, Time) ->
           NewSystem = eval_step(System, OtherPid),
           roll_send(NewSystem, Pid, OtherPid, Time);
         _ ->
-          NewSystem = rev_erlang:eval_step(System, hd(SchedOpts)),
+          NewSystem = cauder:eval_step(System, hd(SchedOpts)),
           roll_send(NewSystem, Pid, OtherPid, Time)
       end;
     _ ->
-      rev_erlang:eval_step(System, hd(SendOpts))
+      cauder:eval_step(System, hd(SendOpts))
   end.
 
 roll_spawn(System, Pid, OtherPid) ->
@@ -64,7 +64,7 @@ roll_spawn(System, Pid, OtherPid) ->
       NewSystem = eval_step(System, OtherPid),
       roll_spawn(NewSystem, Pid, OtherPid);
     _ ->
-      rev_erlang:eval_step(System, hd(SpawnOpts))
+      cauder:eval_step(System, hd(SpawnOpts))
   end.
 
 roll_opts(System, Pid) ->

@@ -1,8 +1,8 @@
--module(rev_erlang_gui).
+-module(cauder_gui).
 -export([setup_gui/0]).
 
--include("rev_erlang.hrl").
--include("rev_erlang_gui.hrl").
+-include("cauder.hrl").
+-include("cauder_gui.hrl").
 -include_lib("wx/include/wx.hrl").
 
 setup_gui() ->
@@ -377,7 +377,7 @@ start(Fun,Args) ->
   Status = ref_lookup(?STATUS),
   #status{loaded = {true, FunDefs}} = Status,
   utils_gui:stop_refs(),
-  rev_erlang:start_refs(FunDefs),
+  cauder:start_refs(FunDefs),
   init_system(Fun, Args),
   refresh(),
   LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
@@ -432,7 +432,7 @@ refresh() ->
     false -> ok;
     true ->
       System = ref_lookup(?SYSTEM),
-      Options = rev_erlang:eval_opts(System),
+      Options = cauder:eval_opts(System),
       refresh_buttons(Options),
       StateText = ref_lookup(?STATE_TEXT),
       wxTextCtrl:setValue(StateText,utils:pp_system(System))
@@ -467,7 +467,7 @@ exec_with(Button) ->
     {PidInt, _} ->
       PartOption = utils_gui:button_to_option(Button),
       Option = PartOption#opt{id = PidInt},
-      NewSystem = rev_erlang:eval_step(System, Option),
+      NewSystem = cauder:eval_step(System, Option),
       ref_add(?SYSTEM, NewSystem)
   end.
 
@@ -484,14 +484,14 @@ eval_mult(Button) ->
           ?FORWARD_BUTTON -> ?MULT_FWD;
           ?BACKWARD_BUTTON -> ?MULT_BWD
         end,
-      {NewSystem, StepsDone} = rev_erlang:eval_mult(System, Option, Steps),
+      {NewSystem, StepsDone} = cauder:eval_mult(System, Option, Steps),
       ref_add(?SYSTEM, NewSystem),
       {StepsDone, Steps}
   end.
 
 eval_norm() ->
   System = ref_lookup(?SYSTEM),
-  {NewSystem, StepsDone} = rev_erlang:eval_norm(System),
+  {NewSystem, StepsDone} = cauder:eval_norm(System),
   ref_add(?SYSTEM, NewSystem),
   StepsDone.
 
@@ -508,7 +508,7 @@ eval_roll() ->
     {_, error} -> error;
     _ ->
       CorePid = cerl:c_int(Pid),
-      {NewSystem, StepsDone, Log} = rev_erlang:eval_roll(System, CorePid, Steps),
+      {NewSystem, StepsDone, Log} = cauder:eval_roll(System, CorePid, Steps),
       ref_add(?SYSTEM, NewSystem),
       {StepsDone, Steps}
   end.

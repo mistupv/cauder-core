@@ -5,11 +5,11 @@ compile: clean
 	@$(MAKE) script
 
 script:
-	@echo "erl -noshell -pa ebin -eval \"rev_erlang:start().\" -s init stop" > rev-erlang.sh
-	@chmod +x rev-erlang.sh
+	@echo "erl -noshell -pa ebin -eval \"cauder:start().\" -s init stop" > cauder.sh
+	@chmod +x cauder.sh
 
 docs: clean-docs
-	@erl -noshell -run edoc_run files '["src/rev_erlang.erl", \
+	@erl -noshell -run edoc_run files '["src/cauder.erl", \
 	                                    "src/fwd_sem.erl", \
 	                                    "src/bwd_sem.erl", \
 	                                    "src/utils.erl"]' '[{dir, "docs"}]'
