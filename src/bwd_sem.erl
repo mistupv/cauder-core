@@ -15,27 +15,29 @@
 %% @doc Performs an evaluation step in process Pid, given System
 %% @end
 %%--------------------------------------------------------------------
-eval_step(#sys{msgs = Msgs, procs = Procs}, Pid) ->
+eval_step(System, Pid) ->
+  Procs = System#sys.procs,
+  Msgs = System#sys.msgs,
   {Proc, RestProcs} = utils:select_proc(Procs, Pid),
   #proc{pid = Pid, hist = [CurHist|RestHist]} = Proc,
   case CurHist of
     {tau, OldEnv, OldExp} ->
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      #sys{msgs = Msgs, procs = [OldProc|RestProcs]};
+      System#sys{msgs = Msgs, procs = [OldProc|RestProcs]};
     {self, OldEnv, OldExp} ->
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      #sys{msgs = Msgs, procs = [OldProc|RestProcs]};
+      System#sys{msgs = Msgs, procs = [OldProc|RestProcs]};
     {send, OldEnv, OldExp, _DestPid, {_MsgValue, Time}} ->
       {_Msg, RestMsgs} = utils:select_msg(Msgs, Time),
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      #sys{msgs = RestMsgs, procs = [OldProc|RestProcs]};
+      System#sys{msgs = RestMsgs, procs = [OldProc|RestProcs]};
     {spawn, OldEnv, OldExp, SpawnPid} ->
       {_SpawnProc, OldRestProcs} = utils:select_proc(RestProcs, SpawnPid),
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      #sys{msgs = Msgs, procs = [OldProc|OldRestProcs]};
+      System#sys{msgs = Msgs, procs = [OldProc|OldRestProcs]};
     {rec, OldEnv, OldExp, _OldMsg, OldMail} ->
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp, mail = OldMail},
-      #sys{msgs = Msgs, procs = [OldProc|RestProcs]}
+      System#sys{msgs = Msgs, procs = [OldProc|RestProcs]}
   end.
 
 %%--------------------------------------------------------------------
@@ -43,7 +45,8 @@ eval_step(#sys{msgs = Msgs, procs = Procs}, Pid) ->
 %% @end
 %%--------------------------------------------------------------------
 eval_sched(System, Id) ->
-  #sys{msgs = Msgs, procs = Procs} = System,
+  Procs = System#sys.procs,
+  Msgs = System#sys.msgs,
   [{Proc,_}] = utils:select_proc_with_time(Procs, Id),
   Pid = Proc#proc.pid,
   {_, RestProcs} = utils:select_proc(Procs, Pid),
@@ -52,7 +55,7 @@ eval_sched(System, Id) ->
   OldProc = Proc#proc{mail = RestMsgs},
   OldMsgs = [OldMsg|Msgs],
   OldProcs = [OldProc|RestProcs],
-  #sys{msgs = OldMsgs, procs = OldProcs}.
+  System#sys{msgs = OldMsgs, procs = OldProcs}.
 
 %%--------------------------------------------------------------------
 %% @doc Gets the evaluation options for a given System
@@ -73,7 +76,8 @@ eval_sched_opts(#sys{procs = Procs}) ->
                 end, Opts).
 
 eval_procs_opts(System) ->
-  #sys{msgs = Msgs, procs = Procs} = System,
+  Procs = System#sys.procs,
+  Msgs = System#sys.msgs,
   ProcPairs = [utils:select_proc(Procs, Proc#proc.pid) || Proc <- Procs ],
   Opts = [eval_proc_opt(#sys{msgs = Msgs, procs = RestProcs}, Proc) ||  {Proc, RestProcs} <- ProcPairs],
   lists:filter( fun (X) ->
@@ -83,7 +87,9 @@ eval_procs_opts(System) ->
                   end
                 end, Opts).
 
-eval_proc_opt(#sys{msgs = Msgs, procs = RestProcs}, CurProc) ->
+eval_proc_opt(RestSystem, CurProc) ->
+  RestProcs = RestSystem#sys.procs,
+  Msgs = RestSystem#sys.msgs,
   Hist = CurProc#proc.hist,
   Rule =
     case Hist of
