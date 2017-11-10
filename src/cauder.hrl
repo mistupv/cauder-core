@@ -1,5 +1,4 @@
-
--define(APP_STRING, "Reversible Erlang").
+-define(APP_STRING, "CauDEr").
 
 -define(ID_GAMMA, 0).
 
