@@ -218,21 +218,13 @@ is_send_rec(_) -> false.
 
 pp_hist(Hist) ->
   FiltHist = lists:filter(fun is_send_rec/1, Hist),
-  ["[",pp_hist_1(FiltHist)].
+  StrItems = [pp_hist_1(Item) || Item <- FiltHist],
+  ["[",string:join(StrItems, ","),"]"].
 
-pp_hist_1([]) -> "]";
-pp_hist_1([LastHist]) -> [pp_hist_2(LastHist),"]"];
-pp_hist_1([CurHist|RestHist]) ->
-  [pp_hist_2(CurHist),pp_hist_3(CurHist),pp_hist_1(RestHist)].
-
-pp_hist_2({send,_,_,_,{Value,Time}}) ->
+pp_hist_1({send,_,_,_,{Value,Time}}) ->
   ["send(",pp(Value),",",integer_to_list(Time),")"];
-pp_hist_2({rec,_,_,{Value,Time},_}) ->
+pp_hist_1({rec,_,_,{Value,Time},_}) ->
   ["rec(",pp(Value),",",integer_to_list(Time),")"].
-
-pp_hist_3({send,_,_,_,_}) -> ",";
-pp_hist_3({rec,_,_,_,_}) -> ",";
-pp_hist_3(_) -> "".
 
 pp_mail([]) -> "[]";
 pp_mail(Mail) ->
