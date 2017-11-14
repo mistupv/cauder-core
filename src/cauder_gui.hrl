@@ -51,6 +51,6 @@
 
 -define(NULL_LABEL, null_label).
 
--define(INFO_TEXT, "A reversible semantics for Erlang. More info at: https://github.com/mistupv/rev-erlang").
+-define(INFO_TEXT, "A Causal-consistent Debugger for Erlang. More info at: https://github.com/mistupv/cauder").
 -define(ERROR_NUM_STEP, "The number of steps is not correct.").
 -define(ERROR_NUM_ARGS, "The number of arguments is not correct.").
