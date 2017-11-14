@@ -18,6 +18,7 @@
 eval_step(System, Pid) ->
   Procs = System#sys.procs,
   Msgs = System#sys.msgs,
+  Trace = System#sys.trace,
   {Proc, RestProcs} = utils:select_proc(Procs, Pid),
   #proc{pid = Pid, hist = [CurHist|RestHist]} = Proc,
   case CurHist of
@@ -27,17 +28,24 @@ eval_step(System, Pid) ->
     {self, OldEnv, OldExp} ->
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
       System#sys{msgs = Msgs, procs = [OldProc|RestProcs]};
-    {send, OldEnv, OldExp, _DestPid, {_MsgValue, Time}} ->
+    {send, OldEnv, OldExp, DestPid, {MsgValue, Time}} ->
       {_Msg, RestMsgs} = utils:select_msg(Msgs, Time),
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      System#sys{msgs = RestMsgs, procs = [OldProc|RestProcs]};
+      TraceItem = #trace{type = ?RULE_SEND, from = Pid, to = DestPid, val = MsgValue, time = Time},
+      OldTrace = lists:delete(TraceItem, Trace),
+      System#sys{msgs = RestMsgs, procs = [OldProc|RestProcs], trace = OldTrace};
     {spawn, OldEnv, OldExp, SpawnPid} ->
       {_SpawnProc, OldRestProcs} = utils:select_proc(RestProcs, SpawnPid),
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      System#sys{msgs = Msgs, procs = [OldProc|OldRestProcs]};
-    {rec, OldEnv, OldExp, _OldMsg, OldMail} ->
+      TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
+      OldTrace = lists:delete(TraceItem, Trace),
+      System#sys{msgs = Msgs, procs = [OldProc|OldRestProcs], trace = OldTrace};
+    {rec, OldEnv, OldExp, OldMsg, OldMail} ->
       OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp, mail = OldMail},
-      System#sys{msgs = Msgs, procs = [OldProc|RestProcs]}
+      {MsgValue, Time} = OldMsg,
+      TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
+      OldTrace = lists:delete(TraceItem, Trace),
+      System#sys{msgs = Msgs, procs = [OldProc|RestProcs], trace = OldTrace}
   end.
 
 %%--------------------------------------------------------------------

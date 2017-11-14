@@ -435,7 +435,9 @@ refresh() ->
       Options = cauder:eval_opts(System),
       refresh_buttons(Options),
       StateText = ref_lookup(?STATE_TEXT),
-      wxTextCtrl:setValue(StateText,utils:pp_system(System))
+      TraceText = ref_lookup(?TRACE_TEXT),
+      wxTextCtrl:setValue(StateText,utils:pp_system(System)),
+      wxTextCtrl:setValue(TraceText,utils:pp_trace(System))
   end.
 
 start() ->

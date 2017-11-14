@@ -65,4 +65,5 @@
 -record(trace, {type,
                 from,
                 to,
-                val}).
+                val,
+                time}).

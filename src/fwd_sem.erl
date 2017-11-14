@@ -211,6 +211,7 @@ eval_seq_1(Env,Exp) ->
 eval_step(System, Pid) ->
   Msgs = System#sys.msgs,
   Procs = System#sys.procs,
+  Trace = System#sys.trace,
   {Proc, RestProcs} = utils:select_proc(Procs, Pid),
   #proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail} = Proc,
   {NewEnv, NewExp, Label} = eval_seq(Env, Exp),
@@ -231,7 +232,9 @@ eval_step(System, Pid) ->
         NewMsgs = [NewMsg|Msgs],
         NewHist = [{send, Env, Exp, DestPid, {MsgValue, Time}}|Hist],
         NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = NewExp},
-        System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs]};
+        TraceItem = #trace{type = ?RULE_SEND, from = Pid, to = DestPid, val = MsgValue, time = Time},
+        NewTrace = [TraceItem|Trace],
+        System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs], trace = NewTrace};
       {spawn, {Var, FunName, FunArgs}} ->
         PidNum = ref_lookup(?FRESH_PID),
         ref_add(?FRESH_PID, PidNum + 1),
@@ -242,14 +245,19 @@ eval_step(System, Pid) ->
         NewHist = [{spawn, Env, Exp, SpawnPid}|Hist],
         RepExp = utils:replace(Var, SpawnPid, NewExp),
         NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = RepExp},
-        System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]]};
+        TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
+        NewTrace = [TraceItem|Trace],
+        System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
         {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Mail),
         UpdatedEnv = utils:merge_env(NewEnv, Bindings),
         RepExp = utils:replace(Var, RecExp, NewExp),
         NewHist = [{rec, Env, Exp, ConsMsg, Mail}|Hist],
         NewProc = Proc#proc{hist = NewHist, env = UpdatedEnv, exp = RepExp, mail = NewMail},
-        System#sys{msgs = Msgs, procs = [NewProc|RestProcs]}
+        {MsgValue, Time} = ConsMsg, 
+        TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
+        NewTrace = [TraceItem|Trace],
+        System#sys{msgs = Msgs, procs = [NewProc|RestProcs], trace = NewTrace}
     end,
   NewSystem.
 
@@ -257,14 +265,16 @@ eval_step(System, Pid) ->
 %% @doc Performs an evaluation step in message Id, given System
 %% @end
 %%--------------------------------------------------------------------
-eval_sched(#sys{msgs = Msgs, procs = Procs}, Id) ->
+eval_sched(System, Id) ->
+  Procs = System#sys.procs,
+  Msgs = System#sys.msgs,
   {Msg, RestMsgs} = utils:select_msg(Msgs, Id),
   #msg{dest = DestPid, val = Value, time = Time} = Msg,
   {Proc, RestProcs} = utils:select_proc(Procs, DestPid),
   #proc{mail = Mail} = Proc,
   NewMail = Mail ++ [{Value, Time}],
   NewProc = Proc#proc{mail = NewMail},
-  #sys{msgs = RestMsgs, procs = [NewProc|RestProcs]}.
+  System#sys{msgs = RestMsgs, procs = [NewProc|RestProcs]}.
 
 is_exp([]) -> false;
 is_exp(Exp) when is_list(Exp) ->

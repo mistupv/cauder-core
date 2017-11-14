@@ -8,7 +8,7 @@
          select_proc/2, select_msg/2, select_proc_with_time/2,
          list_from_core/1,
          update_env/2, merge_env/2,
-         replace/3, pp_system/1,
+         replace/3, pp_system/1, pp_trace/1,
          moduleNames/1,
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
@@ -236,6 +236,36 @@ pp_mail(Mail) ->
 pp_msg_mail(Val, Time) ->
   ["{",pp(Val),",",
    integer_to_list(Time),"}"].
+%%--------------------------------------------------------------------
+%% @doc Pretty-prints a given system trace
+%% @end
+%%--------------------------------------------------------------------
+pp_trace(#sys{trace = Trace}) ->
+  % Trace is built as a stack (newest item is first)
+  % and we must reverse it to print it
+  RevTrace = lists:reverse(Trace),
+  TraceStr = [pp_trace_item(Item) || Item <- RevTrace],
+  string:join(TraceStr,"\n").
+
+pp_trace_item(#trace{type = Type,
+                     from = From,
+                     to   = To,
+                     val  = Val,
+                     time = Time}) ->
+  case Type of
+    ?RULE_SEND    -> pp_trace_send(From, To, Val, Time);
+    ?RULE_SPAWN   -> pp_trace_spawn(From, To);
+    ?RULE_RECEIVE -> pp_trace_receive(From, Val, Time)
+  end.
+
+pp_trace_send(From, To, Val, Time) ->
+  [pp(From)," sends ",pp(Val)," to ",pp(To)," (",integer_to_list(Time),")"].
+
+pp_trace_spawn(From, To) ->
+  [pp(From)," spawns ", pp(To)].
+
+pp_trace_receive(From, Val, Time) ->
+  [pp(From)," receives ",pp(Val)," (",integer_to_list(Time),")"].
 
 %%--------------------------------------------------------------------
 %% @doc Returns the module names from Forms
