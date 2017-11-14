@@ -54,7 +54,7 @@ button_to_option(Button) ->
       Rule = get_rule_from_button(Button),
       #opt{sem = ?BWD_SEM, type = ?TYPE_PROC, rule = Rule};
     ?BACK_SCH_BUTTON ->
-      #opt{sem = ?BWD_SEM, type = ?TYPE_MSG}
+      #opt{sem = ?BWD_SEM, type = ?TYPE_MSG, rule = ?RULE_SCHED}
   end.
 
 option_to_button_label(Option) ->
