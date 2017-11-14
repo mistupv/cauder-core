@@ -50,9 +50,11 @@ eval_sched(System, Id) ->
   [{Proc,_}] = utils:select_proc_with_time(Procs, Id),
   Pid = Proc#proc.pid,
   {_, RestProcs} = utils:select_proc(Procs, Pid),
-  [{Value, Id}|RestMsgs] = Proc#proc.mail,
+  Mail = Proc#proc.mail,
+  {LastMsg,RestMail} = utils:last_msg_rest(Mail),
+  {Value, Id} = LastMsg,
   OldMsg = #msg{dest = Pid, val = Value, time = Id},
-  OldProc = Proc#proc{mail = RestMsgs},
+  OldProc = Proc#proc{mail = RestMail},
   OldMsgs = [OldMsg|Msgs],
   OldProcs = [OldProc|RestProcs],
   System#sys{msgs = OldMsgs, procs = OldProcs}.
@@ -134,13 +136,14 @@ eval_sched_opt(Proc) ->
   Rule =
     case Mail of
       [] -> ?NULL_RULE;
-      [TopMsg|_RestMsgs] ->
-        {_,Time} = TopMsg,
+      _ ->
+        {LastMsg,_} = utils:last_msg_rest(Mail),
+        {_,Time} = LastMsg,
         TopRec = utils:topmost_rec(Hist),
         case TopRec of
           no_rec -> {?RULE_SCHED, Time};
           {rec,_,_,OldMsg,OldMail} ->
-            case utils:is_queue_minus_msg(OldMail,OldMsg,[TopMsg|Mail]) of
+            case utils:is_queue_minus_msg(OldMail, OldMsg, Mail ++ [LastMsg]) of
               false -> {?RULE_SCHED, Time};
               true -> ?NULL_RULE
             end

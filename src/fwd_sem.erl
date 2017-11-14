@@ -218,7 +218,7 @@ eval_step(System, Pid) ->
     case Label of
       tau ->
         NewProc = Proc#proc{hist = [{tau,Env,Exp}|Hist], env = NewEnv, exp = NewExp},
-        #sys{msgs = Msgs, procs = [NewProc|RestProcs]};
+        System#sys{msgs = Msgs, procs = [NewProc|RestProcs]};
       {self, Var} ->
         NewHist = [{self, Env, Exp}|Hist],
         RepExp = utils:replace(Var, Pid, NewExp),

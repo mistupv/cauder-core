@@ -13,7 +13,7 @@
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
          has_fwd/1, has_bwd/1, has_norm/1,
-         is_queue_minus_msg/3, topmost_rec/1]).
+         is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1]).
 
 -include("cauder.hrl").
 
@@ -383,6 +383,12 @@ fresh_var() ->
   VarNum = ref_lookup(?FRESH_VAR),
   ref_add(?FRESH_VAR, VarNum + 1),
   utils:build_var(VarNum).
+
+last_msg_rest(Mail) ->
+  LastMsg = lists:last(Mail),
+  LenMail = length(Mail),
+  RestMail = lists:sublist(Mail,LenMail-1),
+  {LastMsg, RestMail}.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
