@@ -201,13 +201,15 @@ pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}) ->
 
 pp(CoreForm) -> core_pp:format(CoreForm).
 
-pp_env(_) -> "{}".
-% pp_env([]) -> "{}";
-% pp_env(Env) ->
-%   PairsList = [pp_pair(Var,Val) || {Var,Val} <- Env],
-%   ["{",
-%    string:join(PairsList,", "),
-%    "}"].
+pp_pid(Pid) ->
+  ["P",pp(Pid)].
+
+pp_env(Env, Exp) ->
+  RelEnv =  rel_binds(Env,Exp),
+  PairsList = [pp_pair(Var,Val) || {Var,Val} <- RelEnv],
+  ["{",
+   string:join(PairsList,", "),
+   "}"].
 
 pp_pair(Var,Val) ->
   [pp(Var)," -> ",pp(Val)].
@@ -419,6 +421,13 @@ last_msg_rest(Mail) ->
   LenMail = length(Mail),
   RestMail = lists:sublist(Mail,LenMail-1),
   {LastMsg, RestMail}.
+
+rel_binds(Env, Exp) ->
+  RelVars = cerl_trees:variables(Exp),
+  lists:filter( fun ({Var,_}) ->
+                  VarName = cerl:var_name(Var),
+                  lists:member(VarName,RelVars)
+                end, Env).
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
