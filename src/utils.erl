@@ -168,20 +168,19 @@ replace(Var, SubExp, SuperExp) ->
 %%--------------------------------------------------------------------
 pp_system(#sys{msgs = Msgs, procs = Procs}) ->
   [pp_msgs(Msgs),
-   ";\n",
+   "\n",
    pp_procs(Procs)].
 
-pp_msgs([]) -> "[]";
 pp_msgs(Msgs) ->
   MsgsList = [pp_msg(Msg) || Msg <- Msgs],
-  ["[",
+  ["GM: [",
    string:join(MsgsList,","),
-   "]"].
+   "]\n"].
 
 pp_procs(Procs) ->
   SortProcs = lists:sort(fun(P1, P2) -> P1#proc.pid < P2#proc.pid end, Procs),
   ProcsList = [pp_proc(Proc) || Proc <- SortProcs],
-  string:join(ProcsList," |\n").
+  string:join(ProcsList,"\n").
 
 pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
   ["(",
@@ -191,13 +190,11 @@ pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
    "})"].
 
 pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}) ->
-  ["{",
-   pp(Pid),",",
-   pp_hist(Hist),",",
-   pp_env(Env),",\n",
-   pp(Exp),",\n",
-   pp_mail(Mail),
-   "}"].
+  [pp_pid(Pid),": ",
+   pp_mail(Mail),"\n",
+   pp_hist(Hist),"\n",
+   pp_env(Env, Exp),"\n",
+   pp(Exp),"\n"].
 
 pp(CoreForm) -> core_pp:format(CoreForm).
 
@@ -261,13 +258,13 @@ pp_trace_item(#trace{type = Type,
   end.
 
 pp_trace_send(From, To, Val, Time) ->
-  [pp(From)," sends ",pp(Val)," to ",pp(To)," (",integer_to_list(Time),")"].
+  [pp_pid(From)," sends ",pp(Val)," to ",pp_pid(To)," (",integer_to_list(Time),")"].
 
 pp_trace_spawn(From, To) ->
-  [pp(From)," spawns ", pp(To)].
+  [pp_pid(From)," spawns ",pp_pid(To)].
 
 pp_trace_receive(From, Val, Time) ->
-  [pp(From)," receives ",pp(Val)," (",integer_to_list(Time),")"].
+  [pp_pid(From)," receives ",pp(Val)," (",integer_to_list(Time),")"].
 
 %%--------------------------------------------------------------------
 %% @doc Returns the module names from Forms
