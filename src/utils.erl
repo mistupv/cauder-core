@@ -4,7 +4,8 @@
 %%%-------------------------------------------------------------------
 
 -module(utils).
--export([fundef_lookup/2, fundef_rename/1, build_var/1, pid_exists/2,
+-export([fundef_lookup/2, fundef_rename/1, substitute/2,
+         build_var/1, build_var/2, pid_exists/2,
          select_proc/2, select_msg/2, select_proc_with_time/2,
          list_from_core/1,
          update_env/2, merge_env/2,
@@ -41,10 +42,10 @@ fundef_rename(FunDef) ->
                                 {_FunName, _FunArity} ->
                                   NewExp = Exp,
                                   NewAcc = Acc;
-                              _OtherName ->
+                              OtherName ->
                                 case lists:keyfind(Exp, 1, Acc) of
                                   false ->
-                                    NewExp = fresh_var(),
+                                    NewExp = fresh_var(OtherName),
                                     NewAcc = [{Exp,NewExp}] ++ Acc;
                                   {Exp, NewVar} ->
                                     NewExp = NewVar,
@@ -63,14 +64,30 @@ fundef_rename(FunDef) ->
   NewFunDef.
 
 pars_rename(Vars) ->
-  [{Var, fresh_var()} || Var <- Vars].
+  [{Var, fresh_var(cerl:var_name(Var))} || Var <- Vars].
 
+substitute(SuperExp, Env) ->
+  cerl_trees:map(
+    fun (Exp) ->
+      case cerl:type(Exp) of
+        var ->
+          case proplists:get_value(Exp, Env) of
+            undefined -> Exp;
+            Value -> Value
+          end;
+        _   -> Exp
+      end
+    end, SuperExp).
 %%--------------------------------------------------------------------
 %% @doc Builds a variable from a given number Num
 %% @end
 %%--------------------------------------------------------------------
 build_var(Num) ->
-  NumAtom = list_to_atom("y_" ++ integer_to_list(Num)),
+  NumAtom = list_to_atom("k_" ++ integer_to_list(Num)),
+  cerl:c_var(NumAtom).
+
+build_var(Name,Num) ->
+  NumAtom = list_to_atom(atom_to_list(Name) ++ "_" ++ integer_to_list(Num)),
   cerl:c_var(NumAtom).
 
 pid_exists(Procs, Pid) ->
@@ -408,10 +425,10 @@ topmost_rec([CurHist|RestHist]) ->
     _Other -> topmost_rec(RestHist)
   end.
 
-fresh_var() ->
+fresh_var(Name) ->
   VarNum = ref_lookup(?FRESH_VAR),
   ref_add(?FRESH_VAR, VarNum + 1),
-  utils:build_var(VarNum).
+  utils:build_var(Name,VarNum).
 
 last_msg_rest(Mail) ->
   LastMsg = lists:last(Mail),
