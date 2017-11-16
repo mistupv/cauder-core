@@ -70,7 +70,7 @@ roll_spawn(System, Pid, OtherPid) ->
 roll_opts(System, Pid) ->
   ProcOpts = roll_procs_opts(System, Pid),
   SchedOpts = roll_sched_opts(System, Pid),
-  ProcOpts ++ SchedOpts.
+  SchedOpts ++ ProcOpts.
 
 roll_procs_opts(System, Pid) ->
   ProcOpts = bwd_sem:eval_procs_opts(System),
