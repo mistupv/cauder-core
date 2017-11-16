@@ -312,7 +312,7 @@ matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs) ->
       NewMsgs =  AccMsgs ++ RestMsgs,
       {Bindings, ClauseBody, CurMsg, NewMsgs};
     {false, _} ->
-      matchrec(Clauses, RestMsgs, [CurMsg|AccMsgs])
+      matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg])
   end.
 
 %%--------------------------------------------------------------------

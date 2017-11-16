@@ -151,7 +151,7 @@ eval_sched_opt(Proc) ->
         case TopRec of
           no_rec -> {?RULE_SCHED, Time};
           {rec,_,_,OldMsg,OldMail} ->
-            case utils:is_queue_minus_msg(OldMail, OldMsg, Mail ++ [LastMsg]) of
+            case utils:is_queue_minus_msg(OldMail, OldMsg, Mail) of
               false -> {?RULE_SCHED, Time};
               true -> ?NULL_RULE
             end
