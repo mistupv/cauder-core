@@ -59,14 +59,15 @@ waiter_1(ForkDict, PhiloDict) ->
 ask_state(Pid) ->
   Pid ! {get_state, self()},
   receive
-    %State -> State
-    {state, State, Pid} -> State
+    % {state, State, Pid} -> State
+    {state, State, _} -> State
   end.
 
 set_state(Pid, State) ->
   Pid ! {set_state, State, self()},
   receive
-    {been_set, Pid} -> ok
+    % {been_set, Pid} -> ok
+    {been_set, _} -> ok
   end.
 
 philo(WaiterPid, PhiloId) ->
