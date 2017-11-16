@@ -22,7 +22,7 @@ can_roll(#sys{procs = Procs}, Pid) ->
   end.
 
 eval_step(System, Pid) ->
-  #sys{procs = Procs} = System,
+  Procs = System#sys.procs,
   {Proc, _} = utils:select_proc(Procs, Pid),
   [CurHist|_]= Proc#proc.hist,  
   case CurHist of

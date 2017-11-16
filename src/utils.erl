@@ -122,16 +122,12 @@ select_msg(Msgs, Time) ->
 %% @end
 %%--------------------------------------------------------------------
 select_proc_with_time(Procs, Time) ->
-  ProcMailPairs = [ {Proc, Proc#proc.mail} || Proc <- Procs],
-  lists:filter( fun ({_, Mail}) ->
-                  case Mail of
-                    [] ->
-                      false;
-                    [{_, MsgTime}|_RestMsgs] ->
-                      MsgTime == Time
-                  end
-                end,
-                ProcMailPairs).
+  ProcWithTime =
+    lists:filter( fun (Proc) ->
+                    Mail = Proc#proc.mail,
+                    length([ ok || {_,MsgTime} <- Mail, MsgTime == Time]) > 0
+                  end, Procs),
+  hd(ProcWithTime).
 
 %%--------------------------------------------------------------------
 %% @doc Transforms a Core Erlang list to a regular list
