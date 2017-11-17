@@ -20,10 +20,15 @@
 -define(BACK_INT_BUTTON,     412).
 -define(BACK_SCH_BUTTON,     413).
 
--define(FORWARD_BUTTON,      422).
--define(BACKWARD_BUTTON,     423).
--define(NORMALIZE_BUTTON,    424).
--define(ROLL_BUTTON,         425).
+-define(FORWARD_BUTTON,    422).
+-define(BACKWARD_BUTTON,   423).
+-define(NORMALIZE_BUTTON,  424).
+-define(ROLL_BUTTON,       425).
+
+-define(ROLL_SEND_BUTTON,  426).
+-define(ROLL_SPAWN_BUTTON, 427).
+-define(ROLL_REC_BUTTON,   428).
+-define(ROLL_VAR_BUTTON,   429).
 
 -define(SYSTEM,         500).
 -define(STATUS,         501).
@@ -40,8 +45,13 @@
 -define(FUN_CHOICE,     531).
 -define(LEFT_NOTEBOOK,  540).
 -define(RIGHT_NOTEBOOK, 541).
--define(RIGHT_BOTTOM_NOTEBOOK, 541).
+-define(RBOT_NOTEBOOK,  542).
 -define(TRACE_TEXT,     550).
+
+-define(ROLL_SEND_ID_TEXT,  560).
+-define(ROLL_SPAWN_ID_TEXT, 561).
+-define(ROLL_REC_ID_TEXT,   562).
+-define(ROLL_VAR_ID_TEXT,   563).
 
 -define(PAGEPOS_CODE,  0).
 -define(PAGEPOS_STATE, 1).
