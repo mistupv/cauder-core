@@ -128,15 +128,15 @@ setupTracePanel(Parent) ->
 
 setupRightSizer(Parent) ->
   Notebook = wxNotebook:new(Parent, ?RIGHT_NOTEBOOK),
-  BottomNotebook = wxNotebook:new(Parent, ?RIGHT_BOTTOM_NOTEBOOK),
+  BottomNotebook = wxNotebook:new(Parent, ?RBOT_NOTEBOOK),
   ref_add(?RIGHT_NOTEBOOK, Notebook),
-  ref_add(?RIGHT_BOTTOM_NOTEBOOK, BottomNotebook),
+  ref_add(?RBOT_NOTEBOOK, BottomNotebook),
   ManuPanel = setupManualPanel(Notebook),
-  % SemiPanel = setupSemiPanel(Notebook),
   AutoPanel = setupAutoPanel(Notebook),
+  RollPanel = setupRollPanel(Notebook),
   wxNotebook:addPage(Notebook, ManuPanel, "Manual"),
-  % wxNotebook:addPage(Notebook, SemiPanel, "Semi"),
   wxNotebook:addPage(Notebook, AutoPanel, "Automatic"),
+  wxNotebook:addPage(Notebook, RollPanel, "Rollback"),
   % wxNotebook:layout(Notebook),
   TracePanel = setupTracePanel(BottomNotebook),
   wxNotebook:addPage(BottomNotebook, TracePanel, "Trace"),
@@ -200,10 +200,6 @@ setupManualPanel(Parent) ->
   wxSizer:add(BorderSizer, ManuSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
   wxWindow:setSizer(ManuPanel, BorderSizer),
   ManuPanel.
-
-% setupSemiPanel(Parent) ->
-%   SemiPanel = wxPanel:new(Parent),
-%   SemiPanel.
 
 setupAutoPanel(Parent) ->
   AutoPanel = wxPanel:new(Parent),
@@ -277,6 +273,70 @@ setupAutoPanel(Parent) ->
   wxSizer:add(BorderSizer, AutoSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
   wxWindow:setSizer(AutoPanel, BorderSizer),
   AutoPanel.
+
+setupRollPanel(Parent) ->
+  RollPanel = wxPanel:new(Parent),
+  RollSendIdText = wxTextCtrl:new(RollPanel, ?ROLL_SEND_ID_TEXT, [{style,?wxBOTTOM},
+                                                                  {size, {40, -1}}]),
+  RollSpawnIdText = wxTextCtrl:new(RollPanel, ?ROLL_SPAWN_ID_TEXT, [{style,?wxBOTTOM},
+                                                                    {size, {40, -1}}]),
+  RollRecIdText = wxTextCtrl:new(RollPanel, ?ROLL_REC_ID_TEXT, [{style,?wxBOTTOM},
+                                                                {size, {40, -1}}]),
+  RollVarIdText = wxTextCtrl:new(RollPanel, ?ROLL_VAR_ID_TEXT, [{style,?wxBOTTOM},
+                                                                {size, {40, -1}}]),
+  ref_add(?ROLL_SEND_ID_TEXT, RollSendIdText),
+  ref_add(?ROLL_SPAWN_ID_TEXT, RollSpawnIdText),
+  ref_add(?ROLL_REC_ID_TEXT, RollRecIdText),
+  ref_add(?ROLL_VAR_ID_TEXT, RollVarIdText),
+
+  RollSendButton = wxButton:new(RollPanel, ?ROLL_SEND_BUTTON,
+                               [{label, "RollSend"}]),
+  RollSpawnButton = wxButton:new(RollPanel, ?ROLL_SPAWN_BUTTON,
+                               [{label, "RollSpawn"}]),
+  RollRecButton = wxButton:new(RollPanel, ?ROLL_REC_BUTTON,
+                               [{label, "RollReceive"}]),
+  RollVarButton = wxButton:new(RollPanel, ?ROLL_VAR_BUTTON,
+                               [{label, "RollVar"}]),
+
+  ref_add(?ROLL_SEND_BUTTON, RollSendButton),
+  ref_add(?ROLL_SPAWN_BUTTON, RollSpawnButton),
+  ref_add(?ROLL_REC_BUTTON, RollRecButton),
+  ref_add(?ROLL_VAR_BUTTON, RollVarButton),
+
+  RollSizer = wxBoxSizer:new(?wxVERTICAL),
+  RollSendSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  RollSpawnSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  RollRecSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  RollVarSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  BorderSizer = wxBoxSizer:new(?wxVERTICAL),
+
+  wxSizer:add(RollSizer, RollSendSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+  wxSizer:addSpacer(RollSizer, 10),
+  wxSizer:add(RollSizer, RollSpawnSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+  wxSizer:addSpacer(RollSizer, 10),
+  wxSizer:add(RollSizer, RollRecSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+  wxSizer:addSpacer(RollSizer, 10),
+  wxSizer:add(RollSizer, RollVarSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+
+  wxSizer:add(RollSendSizer, RollSendIdText),
+  wxSizer:addSpacer(RollSendSizer, 5),
+  wxSizer:add(RollSendSizer, RollSendButton),
+
+  wxSizer:add(RollSpawnSizer, RollSpawnIdText),
+  wxSizer:addSpacer(RollSpawnSizer, 5),
+  wxSizer:add(RollSpawnSizer, RollSpawnButton),
+
+  wxSizer:add(RollRecSizer, RollRecIdText),
+  wxSizer:addSpacer(RollRecSizer, 5),
+  wxSizer:add(RollRecSizer, RollRecButton),
+
+  wxSizer:add(RollVarSizer, RollVarIdText),
+  wxSizer:addSpacer(RollVarSizer, 5),
+  wxSizer:add(RollVarSizer, RollVarButton),
+
+  wxSizer:add(BorderSizer, RollSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
+  wxWindow:setSizer(RollPanel, BorderSizer),
+  RollPanel.
 
 setupMenu() ->
   MenuBar = wxMenuBar:new(),
