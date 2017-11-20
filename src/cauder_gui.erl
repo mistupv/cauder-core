@@ -126,6 +126,20 @@ setupTracePanel(Parent) ->
   wxWindow:setSizer(TracePanel, BorderSizer),
   TracePanel.
 
+setupRollLogPanel(Parent) ->
+  RollLogPanel = wxPanel:new(Parent),
+  RollLogText = wxTextCtrl:new(RollLogPanel, ?ROLL_LOG_TEXT,
+                               [{style, ?wxTE_MULTILINE bor ?wxTE_READONLY}]),
+  ref_add(?ROLL_LOG_TEXT, RollLogText),
+  RollLogSizer = wxBoxSizer:new(?wxVERTICAL),
+  BorderSizer = wxBoxSizer:new(?wxVERTICAL),
+  SizerFlags = [{proportion, 1}, {flag, ?wxEXPAND}],
+  wxSizer:add(RollLogSizer, RollLogText, SizerFlags),
+  wxSizer:add(BorderSizer, RollLogSizer, [{flag, ?wxALL bor ?wxEXPAND},
+                                       {proportion, 1}, {border, 10}]),
+  wxWindow:setSizer(RollLogPanel, BorderSizer),
+  RollLogPanel.
+
 setupRightSizer(Parent) ->
   Notebook = wxNotebook:new(Parent, ?RIGHT_NOTEBOOK),
   BottomNotebook = wxNotebook:new(Parent, ?RBOT_NOTEBOOK),
@@ -139,7 +153,9 @@ setupRightSizer(Parent) ->
   wxNotebook:addPage(Notebook, RollPanel, "Rollback"),
   % wxNotebook:layout(Notebook),
   TracePanel = setupTracePanel(BottomNotebook),
+  RollLogPanel = setupRollLogPanel(BottomNotebook),
   wxNotebook:addPage(BottomNotebook, TracePanel, "Trace"),
+  wxNotebook:addPage(BottomNotebook, RollLogPanel, "Roll Log"),
   RightSizer = wxBoxSizer:new(?wxVERTICAL),
   SizerFlags = [{proportion, 0}, {flag, ?wxEXPAND}],
   BottomSizerFlags = [{proportion, 1}, {flag, ?wxEXPAND}],
@@ -496,8 +512,10 @@ refresh() ->
       refresh_buttons(Options),
       StateText = ref_lookup(?STATE_TEXT),
       TraceText = ref_lookup(?TRACE_TEXT),
+      RollLogText = ref_lookup(?ROLL_LOG_TEXT),
       wxTextCtrl:setValue(StateText,utils:pp_system(System)),
-      wxTextCtrl:setValue(TraceText,utils:pp_trace(System))
+      wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
+      wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
   end.
 
 start() ->
@@ -517,7 +535,6 @@ start() ->
       utils_gui:update_status_text(?ERROR_NUM_ARGS),
       error
   end.
-
 
 exec_with(Button) ->
   System = ref_lookup(?SYSTEM),

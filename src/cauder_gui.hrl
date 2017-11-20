@@ -47,6 +47,7 @@
 -define(RIGHT_NOTEBOOK, 541).
 -define(RBOT_NOTEBOOK,  542).
 -define(TRACE_TEXT,     550).
+-define(ROLL_LOG_TEXT,  551).
 
 -define(ROLL_SEND_ID_TEXT,  560).
 -define(ROLL_SPAWN_ID_TEXT, 561).
