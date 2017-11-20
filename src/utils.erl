@@ -6,7 +6,8 @@
 -module(utils).
 -export([fundef_lookup/2, fundef_rename/1, substitute/2,
          build_var/1, build_var/2, pid_exists/2,
-         select_proc/2, select_msg/2, select_proc_with_time/2,
+         select_proc/2, select_msg/2,
+         select_proc_with_time/2, select_proc_with_send/2,
          list_from_core/1,
          update_env/2, merge_env/2,
          replace/3, pp_system/1, pp_trace/1,
@@ -128,6 +129,19 @@ select_proc_with_time(Procs, Time) ->
                     length([ ok || {_,MsgTime} <- Mail, MsgTime == Time]) > 0
                   end, Procs),
   hd(ProcWithTime).
+
+%%--------------------------------------------------------------------
+%% @doc Returns the process that contains a send item in history
+%% with time Time
+%% @end
+%%--------------------------------------------------------------------
+select_proc_with_send(Procs, Time) ->
+  ProcWithSend =
+    lists:filter( fun (Proc) ->
+                    Hist = Proc#proc.hist,
+                    has_send(Hist, Time)
+                  end, Procs),
+  ProcWithSend.
 
 %%--------------------------------------------------------------------
 %% @doc Transforms a Core Erlang list to a regular list
@@ -420,6 +434,10 @@ topmost_rec([CurHist|RestHist]) ->
     {rec,_,_,_,_} -> CurHist;
     _Other -> topmost_rec(RestHist)
   end.
+
+has_send([], _) -> false;
+has_send([{send,_,_,_,{_,Time}}|_], Time) -> true;
+has_send([_|RestHist], Time) -> has_send(RestHist, Time).
 
 fresh_var(Name) ->
   VarNum = ref_lookup(?FRESH_VAR),
