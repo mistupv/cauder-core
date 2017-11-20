@@ -611,6 +611,30 @@ loop() ->
           end,
           refresh(),
           loop();
+        #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          disable_all_buttons(),
+          eval_roll_send(),
+          % utils_gui:sttext_roll,
+          refresh(),
+          loop();
+        #wx{id = ?ROLL_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          disable_all_buttons(),
+          eval_roll_spawn(),
+          % utils_gui:sttext_roll,
+          refresh(),
+          loop();
+        #wx{id = ?ROLL_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          disable_all_buttons(),
+          eval_roll_rec(),
+          % utils_gui:sttext_roll,
+          refresh(),
+          loop();
+        #wx{id = ?ROLL_VAR_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          disable_all_buttons(),
+          eval_roll_var(),
+          % utils_gui:sttext_roll,
+          refresh(),
+          loop();
         %% -------------------- Text handlers -------------------- %%
         #wx{id = ?PID_TEXT, event = #wxCommand{type = command_text_updated}} ->
           refresh(),
