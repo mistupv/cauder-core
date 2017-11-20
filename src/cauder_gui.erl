@@ -570,7 +570,7 @@ eval_roll() ->
     {_, error} -> error;
     _ ->
       CorePid = cerl:c_int(Pid),
-      {NewSystem, StepsDone, Log} = cauder:eval_roll(System, CorePid, Steps),
+      {NewSystem, StepsDone} = cauder:eval_roll(System, CorePid, Steps),
       ref_add(?SYSTEM, NewSystem),
       {StepsDone, Steps}
   end.
@@ -583,7 +583,7 @@ eval_roll_send() ->
   case Id of
     error -> error;
     _ ->
-      {NewSystem, StepsDone, Log} = cauder:eval_roll_send(System, Id),
+      {NewSystem, StepsDone} = cauder:eval_roll_send(System, Id),
       ref_add(?SYSTEM, NewSystem),
       StepsDone
   end.

@@ -115,26 +115,27 @@ eval_norm_1(System, Steps) ->
   end.
 
 eval_roll(System, Pid, Steps) ->
-  eval_roll_1(System, Pid, Steps, 0, []).
+  EmptyLogSystem = utils:empty_log(System),
+  eval_roll_1(EmptyLogSystem, Pid, Steps, 0).
 
-eval_roll_1(System, _Pid, Steps, Steps, RollLog) ->
-  {System, Steps, RollLog};
-eval_roll_1(System, Pid, Steps, StepsDone, RollLog) ->
+eval_roll_1(System, _Pid, Steps, Steps) ->
+  {System, Steps};
+eval_roll_1(System, Pid, Steps, StepsDone) ->
   case roll:can_roll(System, Pid) of
     false ->
-      {System, StepsDone, RollLog};
+      {System, StepsDone};
     true ->
       NewSystem = roll:eval_step(System, Pid),
-      NewLog = nothing,
-      eval_roll_1(NewSystem, Pid, Steps, StepsDone + 1, RollLog ++ [NewLog])
+      eval_roll_1(NewSystem, Pid, Steps, StepsDone + 1)
   end.
 
 eval_roll_send(System, Id) ->
   case roll:can_roll_send(System, Id) of
     false ->
-      {System, 0, []};
+      {System, 0};
     true ->
-      {roll:eval_roll_send(System, Id), 0, []}
+      EmptyLogSystem = utils:empty_log(System),
+      {roll:eval_roll_send(EmptyLogSystem, Id), 0}
   end.
 
 ref_add(Id, Ref) ->

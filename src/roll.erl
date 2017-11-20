@@ -27,11 +27,15 @@ eval_step(System, Pid) ->
   [CurHist|_]= Proc#proc.hist,  
   case CurHist of
     {send, _, _, DestPid, {_, Time}} ->
+      NewLog = System#sys.roll ++ utils:gen_log_send(Pid, DestPid),
+      LogSystem = System#sys{roll = NewLog},
       ?LOG("ROLLing back SEND from " ++ ?TO_STRING(cerl:concrete(Pid)) ++ " to " ++ ?TO_STRING(cerl:concrete(DestPid))),
-      roll_send(System, Pid, DestPid, Time);
+      roll_send(LogSystem, Pid, DestPid, Time);
     {spawn, _, _, SpawnPid} ->
+      NewLog = System#sys.roll ++ utils:gen_log_spawn(Pid, SpawnPid),
+      LogSystem = System#sys{roll = NewLog},
       ?LOG("ROLLing back SPAWN of " ++ ?TO_STRING(cerl:concrete(SpawnPid))),
-      roll_spawn(System, Pid, SpawnPid);
+      roll_spawn(LogSystem, Pid, SpawnPid);
     _ ->
       RollOpts = roll_opts(System, Pid),
       cauder:eval_step(System, hd(RollOpts))
