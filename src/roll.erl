@@ -4,7 +4,7 @@
 %%%-------------------------------------------------------------------
 
 -module(roll).
--export([can_roll/2, eval_step/2]).
+-export([can_roll/2, can_roll_send/2, eval_step/2, eval_roll_send/2]).
 
 -include("cauder.hrl").
 
@@ -65,6 +65,33 @@ roll_spawn(System, Pid, OtherPid) ->
       roll_spawn(NewSystem, Pid, OtherPid);
     _ ->
       cauder:eval_step(System, hd(SpawnOpts))
+  end.
+
+can_roll_send(System, Id) ->
+  Procs = System#sys.procs,
+  ProcsWithSend = utils:select_proc_with_send(Procs, Id),
+  case length(ProcsWithSend) of
+    0 -> false;
+    _ -> true
+  end.
+
+eval_roll_send(System, Id) ->
+  Procs = System#sys.procs,
+  ProcsWithSend = utils:select_proc_with_send(Procs, Id),
+  Proc = hd(ProcsWithSend),
+  Pid = Proc#proc.pid,
+  eval_roll_until_send(System, Pid, Id).
+
+eval_roll_until_send(System, Pid, Id) ->
+  Procs = System#sys.procs,
+  {Proc, _} = utils:select_proc(Procs, Pid),
+  [CurHist|_]= Proc#proc.hist,
+  case CurHist of
+    {send,_,_,_,{_, Id}} ->
+      eval_step(System, Pid);
+    _ ->
+      NewSystem = eval_step(System, Pid),
+      eval_roll_until_send(NewSystem, Pid, Id)
   end.
 
 roll_opts(System, Pid) ->
