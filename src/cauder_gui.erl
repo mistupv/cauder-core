@@ -600,12 +600,22 @@ eval_roll_send() ->
   case Id of
     error -> error;
     _ ->
-      {NewSystem, StepsDone} = cauder:eval_roll_send(System, Id),
-      ref_add(?SYSTEM, NewSystem),
-      StepsDone
+      NewSystem = cauder:eval_roll_send(System, Id),
+      ref_add(?SYSTEM, NewSystem)
   end.
 
-eval_roll_spawn() -> ok.
+eval_roll_spawn() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?ROLL_SPAWN_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  {Id, _} = string:to_integer(IdText),
+  case Id of
+    error -> error;
+    _ ->
+      NewSystem = cauder:eval_roll_spawn(System, cerl:c_int(Id)),
+      ref_add(?SYSTEM, NewSystem)
+  end.
+
 eval_roll_rec() -> ok.
 eval_roll_var() -> ok.
 
