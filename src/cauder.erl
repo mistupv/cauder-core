@@ -9,7 +9,7 @@
 -export([start/0,
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
-         eval_roll/3]).
+         eval_roll/3, eval_roll_send/2]).
 
 -include("cauder.hrl").
 
@@ -127,6 +127,14 @@ eval_roll_1(System, Pid, Steps, StepsDone, RollLog) ->
       NewSystem = roll:eval_step(System, Pid),
       NewLog = nothing,
       eval_roll_1(NewSystem, Pid, Steps, StepsDone + 1, RollLog ++ [NewLog])
+  end.
+
+eval_roll_send(System, Id) ->
+  case roll:can_roll_send(System, Id) of
+    false ->
+      {System, 0, []};
+    true ->
+      {roll:eval_roll_send(System, Id), 0, []}
   end.
 
 ref_add(Id, Ref) ->

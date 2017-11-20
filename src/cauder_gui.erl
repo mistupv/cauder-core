@@ -575,6 +575,23 @@ eval_roll() ->
       {StepsDone, Steps}
   end.
 
+eval_roll_send() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?ROLL_SEND_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  {Id, _} = string:to_integer(IdText),
+  case Id of
+    error -> error;
+    _ ->
+      {NewSystem, StepsDone, Log} = cauder:eval_roll_send(System, Id),
+      ref_add(?SYSTEM, NewSystem),
+      StepsDone
+  end.
+
+eval_roll_spawn() -> ok.
+eval_roll_rec() -> ok.
+eval_roll_var() -> ok.
+
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
