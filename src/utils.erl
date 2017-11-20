@@ -10,12 +10,13 @@
          select_proc_with_time/2, select_proc_with_send/2,
          list_from_core/1,
          update_env/2, merge_env/2,
-         replace/3, pp_system/1, pp_trace/1,
+         replace/3, pp_system/1, pp_trace/1, pp_roll_log/1,
          moduleNames/1,
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
          has_fwd/1, has_bwd/1, has_norm/1,
-         is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1]).
+         is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
+         gen_log_send/2, gen_log_spawn/2, empty_log/1]).
 
 -include("cauder.hrl").
 
@@ -262,6 +263,7 @@ pp_mail(Mail) ->
 pp_msg_mail(Val, Time) ->
   ["{",pp(Val),",",
    integer_to_list(Time),"}"].
+
 %%--------------------------------------------------------------------
 %% @doc Pretty-prints a given system trace
 %% @end
@@ -292,6 +294,13 @@ pp_trace_spawn(From, To) ->
 
 pp_trace_receive(From, Val, Time) ->
   [pp_pid(From)," receives ",pp(Val)," (",integer_to_list(Time),")"].
+
+%%--------------------------------------------------------------------
+%% @doc Prints a given system roll log
+%% @end
+%%--------------------------------------------------------------------
+pp_roll_log(#sys{roll = RollLog}) ->
+  string:join(RollLog,"\n").
 
 %%--------------------------------------------------------------------
 %% @doc Returns the module names from Forms
@@ -456,6 +465,16 @@ rel_binds(Env, Exp) ->
                   VarName = cerl:var_name(Var),
                   lists:member(VarName,RelVars)
                 end, Env).
+
+gen_log_send(Pid, OtherPid) ->
+  [["Roll send from ",pp_pid(Pid)," to ",pp_pid(OtherPid)]].
+
+gen_log_spawn(_Pid, OtherPid) ->
+  % [["Roll SPAWN of ",pp_pid(OtherPid)," from ",pp_pid(Pid)]].
+  [["Roll spawn of ",pp_pid(OtherPid)]].
+
+empty_log(System) ->
+  System#sys{roll = []}.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
