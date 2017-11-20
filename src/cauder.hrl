@@ -46,8 +46,7 @@
                hist = [],
                env  = [],
                exp,
-               mail = [],
-               roll = []}).
+               mail = []}).
 
 -record(msg, {dest,
               val,
@@ -55,7 +54,8 @@
 
 -record(sys, {msgs  = [],
               procs = [],
-              trace = []}).
+              trace = [],
+              roll  = []}).
 
 -record(opt, {sem,    % forward or backward
               type,   % proc or msg
