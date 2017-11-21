@@ -11,7 +11,7 @@
          select_proc_with_spawn/2, select_proc_with_rec/2,
          select_proc_with_var/2, list_from_core/1,
          update_env/2, merge_env/2,
-         replace/3, pp_system/1, pp_trace/1, pp_roll_log/1,
+         replace/3, pp_system/2, pp_trace/1, pp_roll_log/1,
          moduleNames/1,
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
@@ -234,21 +234,16 @@ replace(Var, SubExp, SuperExp) ->
 %% @doc Pretty-prints a given System
 %% @end
 %%--------------------------------------------------------------------
-pp_system(#sys{msgs = Msgs, procs = Procs}) ->
+pp_system(#sys{msgs = Msgs, procs = Procs}, Opts) ->
   [pp_msgs(Msgs),
    "\n",
-   pp_procs(Procs)].
+   pp_procs(Procs, Opts)].
 
 pp_msgs(Msgs) ->
   MsgsList = [pp_msg(Msg) || Msg <- Msgs],
   ["GM: [",
    string:join(MsgsList,","),
    "]\n"].
-
-pp_procs(Procs) ->
-  SortProcs = lists:sort(fun(P1, P2) -> P1#proc.pid < P2#proc.pid end, Procs),
-  ProcsList = [pp_proc(Proc) || Proc <- SortProcs],
-  string:join(ProcsList,"\n").
 
 pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
   ["(",
@@ -257,19 +252,28 @@ pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
    integer_to_list(Time),
    "})"].
 
-pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}) ->
-  [pp_pid(Pid),": ",
-   pp_mail(Mail),"\n",
-   pp_hist(Hist),"\n",
-   pp_env(Env, Exp),"\n",
-   pp(Exp),"\n"].
+pp_procs(Procs, Opts) ->
+  SortProcs = lists:sort(fun(P1, P2) -> P1#proc.pid < P2#proc.pid end, Procs),
+  ProcsList = [pp_proc(Proc, Opts) || Proc <- SortProcs],
+  string:join(ProcsList,"\n").
 
-pp(CoreForm) -> core_pp:format(CoreForm).
+pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}, Opts) ->
+  [pp_pid(Pid),": ",
+   pp_mail(Mail, Opts),
+   pp_hist(Hist, Opts),
+   pp_env(Env, Exp, Opts),
+   pp(Exp, Opts)].
 
 pp_pid(Pid) ->
   ["P",pp(Pid)].
 
-pp_env(Env, Exp) ->
+pp_env(Env, Exp, Opts) ->
+  case proplists:get_value(?PRINT_ENV, Opts) of
+    false -> "";
+    true  -> [pp_env_1(Env, Exp),"\n"]
+  end.
+
+pp_env_1(Env, Exp) ->
   RelEnv =  rel_binds(Env,Exp),
   PairsList = [pp_pair(Var,Val) || {Var,Val} <- RelEnv],
   ["{",
@@ -283,18 +287,32 @@ is_send_rec({send,_,_,_,_}) -> true;
 is_send_rec({rec,_,_,_,_}) -> true;
 is_send_rec(_) -> false.
 
-pp_hist(Hist) ->
-  FiltHist = lists:filter(fun is_send_rec/1, Hist),
-  StrItems = [pp_hist_1(Item) || Item <- FiltHist],
-  ["[",string:join(StrItems, ","),"]"].
+pp_hist(Hist, Opts) ->
+  case proplists:get_value(?PRINT_HIST, Opts) of
+    false -> "";
+    true  -> [pp_hist_1(Hist),"\n"]
+  end.
 
-pp_hist_1({send,_,_,_,{Value,Time}}) ->
+pp_hist_1(Hist) ->
+  FiltHist = lists:filter(fun is_send_rec/1, Hist),
+  StrItems = [pp_hist_2(Item) || Item <- FiltHist],
+  ["[",
+   string:join(StrItems, ","),
+   "]"].
+
+pp_hist_2({send,_,_,_,{Value,Time}}) ->
   ["send(",pp(Value),",",integer_to_list(Time),")"];
-pp_hist_1({rec,_,_,{Value,Time},_}) ->
+pp_hist_2({rec,_,_,{Value,Time},_}) ->
   ["rec(",pp(Value),",",integer_to_list(Time),")"].
 
-pp_mail([]) -> "[]";
-pp_mail(Mail) ->
+pp_mail(Mail, Opts) ->
+  case proplists:get_value(?PRINT_MAIL, Opts) of
+    false -> "";
+    true  -> [pp_mail_1(Mail),"\n"]
+  end.
+
+pp_mail_1([]) -> "[]";
+pp_mail_1(Mail) ->
   MailList = [pp_msg_mail(Val, Time) || {Val, Time} <- Mail],
   ["[",
    string:join(MailList,","),
@@ -303,6 +321,15 @@ pp_mail(Mail) ->
 pp_msg_mail(Val, Time) ->
   ["{",pp(Val),",",
    integer_to_list(Time),"}"].
+
+
+pp(CoreForm, Opts) ->
+  case proplists:get_value(?PRINT_EXP, Opts) of
+    false -> "";
+    true  -> [pp(CoreForm),"\n"]
+  end.
+
+pp(CoreForm) -> core_pp:format(CoreForm).
 
 %%--------------------------------------------------------------------
 %% @doc Pretty-prints a given system trace

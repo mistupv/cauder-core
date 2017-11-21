@@ -4,7 +4,7 @@
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
          set_choices/1, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
-         prev_font_size/1, next_font_size/1, sort_opts/1]).
+         prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0]).
 
 -include("cauder.hrl").
 -include("cauder_gui.hrl").
@@ -175,6 +175,13 @@ next_font_size(CurSize) ->
 sort_opts(Opts) ->
   SortOpts = lists:sort(fun(P1, P2) -> P1#opt.id < P2#opt.id end, Opts),
   SortOpts.
+
+toggle_opts() ->
+  MenuView = ref_lookup(?MENU_VIEW),
+  [{?PRINT_MAIL, wxMenu:isChecked(MenuView, ?TOGGLE_MAIL)},
+   {?PRINT_HIST, wxMenu:isChecked(MenuView, ?TOGGLE_HIST)},
+   {?PRINT_ENV,  wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
+   {?PRINT_EXP,  wxMenu:isChecked(MenuView, ?TOGGLE_EXP)}].
 
 ref_lookup(Id) ->
     ets:lookup_element(?GUI_REF, Id, 2).
