@@ -8,7 +8,7 @@
          build_var/1, build_var/2, pid_exists/2,
          select_proc/2, select_msg/2,
          select_proc_with_time/2, select_proc_with_send/2,
-         select_proc_with_spawn/2,
+         select_proc_with_spawn/2, select_proc_with_rec/2,
          list_from_core/1,
          update_env/2, merge_env/2,
          replace/3, pp_system/1, pp_trace/1, pp_roll_log/1,
@@ -157,6 +157,19 @@ select_proc_with_spawn(Procs, Pid) ->
                     has_spawn(Hist, Pid)
                   end, Procs),
   ProcWithSpawn.
+
+%%--------------------------------------------------------------------
+%% @doc Returns the processes that contain a spawn item in history
+%% with pid Pid
+%% @end
+%%--------------------------------------------------------------------
+select_proc_with_rec(Procs, Time) ->
+  ProcWithRec =
+    lists:filter( fun (Proc) ->
+                    Hist = Proc#proc.hist,
+                    has_rec(Hist, Time)
+                  end, Procs),
+  ProcWithRec.
 
 %%--------------------------------------------------------------------
 %% @doc Transforms a Core Erlang list to a regular list
@@ -462,10 +475,13 @@ has_send([], _) -> false;
 has_send([{send,_,_,_,{_,Time}}|_], Time) -> true;
 has_send([_|RestHist], Time) -> has_send(RestHist, Time).
 
-
 has_spawn([], _) -> false;
 has_spawn([{spawn,_,_,Pid}|_], Pid) -> true;
 has_spawn([_|RestHist], Pid) -> has_spawn(RestHist, Pid).
+
+has_rec([], _) -> false;
+has_rec([{rec,_,_, {_, Time},_}|_], Time) -> true;
+has_rec([_|RestHist], Time) -> has_rec(RestHist, Time).
 
 fresh_var(Name) ->
   VarNum = ref_lookup(?FRESH_VAR),
