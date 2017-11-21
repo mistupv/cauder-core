@@ -82,6 +82,14 @@ can_roll_send(System, Id) ->
     _ -> true
   end.
 
+can_roll_spawn(System, SpawnPid) ->
+  Procs = System#sys.procs,
+  ProcsWithSpawn = utils:select_proc_with_spawn(Procs, SpawnPid),
+  case length(ProcsWithSpawn) of
+    0 -> false;
+    _ -> true
+  end.
+
 can_roll_rec(System, Id) ->
   Procs = System#sys.procs,
   ProcsWithRec = utils:select_proc_with_rec(Procs, Id),
@@ -96,6 +104,13 @@ eval_roll_send(System, Id) ->
   Proc = hd(ProcsWithSend),
   Pid = Proc#proc.pid,
   eval_roll_until_send(System, Pid, Id).
+
+eval_roll_spawn(System, SpawnPid) ->
+  Procs = System#sys.procs,
+  ProcsWithSpawn = utils:select_proc_with_spawn(Procs, SpawnPid),
+  Proc = hd(ProcsWithSpawn),
+  Pid = Proc#proc.pid,
+  eval_roll_until_spawn(System, Pid, SpawnPid).
 
 eval_roll_rec(System, Id) ->
   Procs = System#sys.procs,
@@ -114,6 +129,18 @@ eval_roll_until_send(System, Pid, Id) ->
     _ ->
       NewSystem = eval_step(System, Pid),
       eval_roll_until_send(NewSystem, Pid, Id)
+  end.
+
+eval_roll_until_spawn(System, Pid, SpawnPid) ->
+  Procs = System#sys.procs,
+  {Proc, _} = utils:select_proc(Procs, Pid),
+  [CurHist|_]= Proc#proc.hist,
+  case CurHist of
+    {spawn,_,_,SpawnPid} ->
+      eval_step(System, Pid);
+    _ ->
+      NewSystem = eval_step(System, Pid),
+      eval_roll_until_spawn(NewSystem, Pid, SpawnPid)
   end.
 
 eval_roll_until_rec(System, Pid, Id) ->
@@ -138,33 +165,6 @@ eval_roll_after_rec(System, Pid, Id) ->
       eval_roll_after_rec(NewSystem, Pid, Id);
     _ ->
       NewSystem
-  end.
-
-can_roll_spawn(System, SpawnPid) ->
-  Procs = System#sys.procs,
-  ProcsWithSpawn = utils:select_proc_with_spawn(Procs, SpawnPid),
-  case length(ProcsWithSpawn) of
-    0 -> false;
-    _ -> true
-  end.
-
-eval_roll_spawn(System, SpawnPid) ->
-  Procs = System#sys.procs,
-  ProcsWithSpawn = utils:select_proc_with_spawn(Procs, SpawnPid),
-  Proc = hd(ProcsWithSpawn),
-  Pid = Proc#proc.pid,
-  eval_roll_until_spawn(System, Pid, SpawnPid).
-
-eval_roll_until_spawn(System, Pid, SpawnPid) ->
-  Procs = System#sys.procs,
-  {Proc, _} = utils:select_proc(Procs, Pid),
-  [CurHist|_]= Proc#proc.hist,
-  case CurHist of
-    {spawn,_,_,SpawnPid} ->
-      eval_step(System, Pid);
-    _ ->
-      NewSystem = eval_step(System, Pid),
-      eval_roll_until_spawn(NewSystem, Pid, SpawnPid)
   end.
 
 roll_opts(System, Pid) ->
