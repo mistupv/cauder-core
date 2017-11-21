@@ -5,9 +5,9 @@
 
 -module(roll).
 -export([can_roll/2, can_roll_send/2, can_roll_spawn/2,
-         can_roll_rec/2,
+         can_roll_rec/2, can_roll_var/2,
          eval_step/2, eval_roll_send/2, eval_roll_spawn/2,
-         eval_roll_rec/2]).
+         eval_roll_rec/2, eval_roll_var/2]).
 
 -include("cauder.hrl").
 
@@ -98,6 +98,14 @@ can_roll_rec(System, Id) ->
     _ -> true
   end.
 
+can_roll_var(System, Id) ->
+  Procs = System#sys.procs,
+  ProcsWithVar = utils:select_proc_with_var(Procs, Id),
+  case length(ProcsWithVar) of
+    0 -> false;
+    _ -> true
+  end.
+
 eval_roll_send(System, Id) ->
   Procs = System#sys.procs,
   ProcsWithSend = utils:select_proc_with_send(Procs, Id),
@@ -118,6 +126,13 @@ eval_roll_rec(System, Id) ->
   Proc = hd(ProcsWithRec),
   Pid = Proc#proc.pid,
   eval_roll_until_rec(System, Pid, Id).
+
+eval_roll_var(System, Id) ->
+  Procs = System#sys.procs,
+  ProcsWithVar = utils:select_proc_with_var(Procs, Id),
+  Proc = hd(ProcsWithVar),
+  Pid = Proc#proc.pid,
+  eval_roll_until_var(System, Pid, Id).
 
 eval_roll_until_send(System, Pid, Id) ->
   Procs = System#sys.procs,
@@ -165,6 +180,18 @@ eval_roll_after_rec(System, Pid, Id) ->
       eval_roll_after_rec(NewSystem, Pid, Id);
     _ ->
       NewSystem
+  end.
+
+eval_roll_until_var(System, Pid, Id) ->
+  Procs = System#sys.procs,
+  {Proc, _} = utils:select_proc(Procs, Pid),
+  Env = Proc#proc.env,
+  case utils:has_var(Env, Id) of
+    false ->
+      System;
+    true ->
+      NewSystem = eval_step(System, Pid),
+      eval_roll_until_var(NewSystem, Pid, Id)
   end.
 
 roll_opts(System, Pid) ->

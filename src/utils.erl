@@ -9,13 +9,13 @@
          select_proc/2, select_msg/2,
          select_proc_with_time/2, select_proc_with_send/2,
          select_proc_with_spawn/2, select_proc_with_rec/2,
-         list_from_core/1,
+         select_proc_with_var/2, list_from_core/1,
          update_env/2, merge_env/2,
          replace/3, pp_system/1, pp_trace/1, pp_roll_log/1,
          moduleNames/1,
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
-         has_fwd/1, has_bwd/1, has_norm/1,
+         has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1]).
 
@@ -168,6 +168,19 @@ select_proc_with_rec(Procs, Time) ->
     lists:filter( fun (Proc) ->
                     Hist = Proc#proc.hist,
                     has_rec(Hist, Time)
+                  end, Procs),
+  ProcWithRec.
+
+%%--------------------------------------------------------------------
+%% @doc Returns the processes that contain a binding for Var in
+%% its environment Env
+%% @end
+%%--------------------------------------------------------------------
+select_proc_with_var(Procs, Var) ->
+  ProcWithRec =
+    lists:filter( fun (Proc) ->
+                    Env = Proc#proc.env,
+                    has_var(Env, Var)
                   end, Procs),
   ProcWithRec.
 
@@ -482,6 +495,12 @@ has_spawn([_|RestHist], Pid) -> has_spawn(RestHist, Pid).
 has_rec([], _) -> false;
 has_rec([{rec,_,_, {_, Time},_}|_], Time) -> true;
 has_rec([_|RestHist], Time) -> has_rec(RestHist, Time).
+
+has_var(Env, Var) ->
+  case proplists:get_value(Var, Env) of
+    undefined -> false;
+    _ -> true
+  end.
 
 fresh_var(Name) ->
   VarNum = ref_lookup(?FRESH_VAR),
