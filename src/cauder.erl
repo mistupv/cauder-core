@@ -10,7 +10,7 @@
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
          eval_roll/3, eval_roll_send/2, eval_roll_spawn/2,
-         eval_roll_rec/2]).
+         eval_roll_rec/2, eval_roll_var/2]).
 
 -include("cauder.hrl").
 
@@ -155,6 +155,15 @@ eval_roll_rec(System, Id) ->
     true ->
       EmptyLogSystem = utils:empty_log(System),
       roll:eval_roll_rec(EmptyLogSystem, Id)
+  end.
+
+eval_roll_var(System, Id) ->
+  case roll:can_roll_var(System, Id) of
+    false ->
+      System;
+    true ->
+      EmptyLogSystem = utils:empty_log(System),
+      roll:eval_roll_var(EmptyLogSystem, Id)
   end.
 
 ref_add(Id, Ref) ->

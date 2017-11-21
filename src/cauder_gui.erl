@@ -628,7 +628,16 @@ eval_roll_rec() ->
       ref_add(?SYSTEM, NewSystem)
   end.
 
-eval_roll_var() -> ok.
+eval_roll_var() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?ROLL_VAR_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  case IdText of
+    "" -> error;
+    _ ->
+      NewSystem = cauder:eval_roll_var(System, cerl:c_var(list_to_atom(IdText))),
+      ref_add(?SYSTEM, NewSystem)
+  end.
 
 loop() ->
     receive
