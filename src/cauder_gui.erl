@@ -639,6 +639,10 @@ eval_roll_var() ->
       ref_add(?SYSTEM, NewSystem)
   end.
 
+focus_roll_log() ->
+  RBotNotebook = ref_lookup(?RBOT_NOTEBOOK),
+  wxNotebook:setSelection(RBotNotebook, ?PAGEPOS_ROLL).
+
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
@@ -654,7 +658,7 @@ loop() ->
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll(),
-          % utils_gui:sttext_roll,
+          focus_roll_log(),
           refresh(),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
@@ -678,25 +682,25 @@ loop() ->
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_send(),
-          % utils_gui:sttext_roll,
+          focus_roll_log(),
           refresh(),
           loop();
         #wx{id = ?ROLL_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_spawn(),
-          % utils_gui:sttext_roll,
+          focus_roll_log(),
           refresh(),
           loop();
         #wx{id = ?ROLL_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_rec(),
-          % utils_gui:sttext_roll,
+          focus_roll_log(),
           refresh(),
           loop();
         #wx{id = ?ROLL_VAR_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_var(),
-          % utils_gui:sttext_roll,
+          focus_roll_log(),
           refresh(),
           loop();
         %% -------------------- Text handlers -------------------- %%
