@@ -359,6 +359,7 @@ setupMenu() ->
   File = wxMenu:new(),
   View = wxMenu:new(),
   Help = wxMenu:new(),
+  ref_add(?MENU_VIEW, View),
   wxMenuBar:append(MenuBar, File, "&File"),
   wxMenuBar:append(MenuBar, View, "&View"),
   wxMenuBar:append(MenuBar, Help, "&Help"),
@@ -366,6 +367,16 @@ setupMenu() ->
   wxMenu:append(File, ?EXIT,     "Quit\tCtrl-Q"),
   wxMenu:append(View, ?ZOOM_IN,  "Zoom In\tCtrl-+"),
   wxMenu:append(View, ?ZOOM_OUT, "Zoom Out\tCtrl--"),
+  wxMenu:appendSeparator(View),
+  ToggleMail = wxMenu:appendCheckItem(View, ?TOGGLE_MAIL, "Toggle Mailboxes \tCtrl-M"),
+  ToggleHist = wxMenu:appendCheckItem(View, ?TOGGLE_HIST, "Toggle Histories \tCtrl-H"),
+  ToggleEnv  = wxMenu:appendCheckItem(View, ?TOGGLE_ENV,  "Toggle Environments \tCtrl-T"),
+  ToggleExp  = wxMenu:appendCheckItem(View, ?TOGGLE_EXP,  "Toggle Expressions \tCtrl-E"),
+  wxMenuItem:check(ToggleMail),
+  wxMenuItem:check(ToggleHist),
+  wxMenuItem:check(ToggleEnv),
+  wxMenuItem:check(ToggleExp),
+  wxMenu:appendSeparator(View),
   wxMenu:append(Help, ?ABOUT,    "About"),
   Frame = ref_lookup(?FRAME),
   wxFrame:setMenuBar(Frame, MenuBar).
@@ -510,10 +521,11 @@ refresh() ->
       System = ref_lookup(?SYSTEM),
       Options = cauder:eval_opts(System),
       refresh_buttons(Options),
+      ToggleOpts = utils_gui:toggle_opts(),
       StateText = ref_lookup(?STATE_TEXT),
       TraceText = ref_lookup(?TRACE_TEXT),
       RollLogText = ref_lookup(?ROLL_LOG_TEXT),
-      wxTextCtrl:setValue(StateText,utils:pp_system(System)),
+      wxTextCtrl:setValue(StateText,utils:pp_system(System, ToggleOpts)),
       wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
       wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
   end.
@@ -731,6 +743,18 @@ loop() ->
           loop();
         #wx{id = ?ZOOM_OUT, event = #wxCommand{type = command_menu_selected}} ->
           zoomOut(),
+          loop();
+        #wx{id = ?TOGGLE_MAIL, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(),
+          loop();
+        #wx{id = ?TOGGLE_HIST, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(),
+          loop();
+        #wx{id = ?TOGGLE_ENV, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(),
+          loop();
+        #wx{id = ?TOGGLE_EXP, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),

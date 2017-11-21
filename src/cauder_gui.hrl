@@ -7,11 +7,15 @@
 
 -define(FONT_SIZES, [8, 10, 12, 13, 14, 16, 20, 24, 32, 36, 42, 48]).
 
--define(ABOUT,    ?wxID_ABOUT).
--define(EXIT,     ?wxID_EXIT).
--define(OPEN,     ?wxID_OPEN).
--define(ZOOM_IN,  100).
--define(ZOOM_OUT, 101).
+-define(ABOUT,       ?wxID_ABOUT).
+-define(EXIT,        ?wxID_EXIT).
+-define(OPEN,        ?wxID_OPEN).
+-define(ZOOM_IN,     100).
+-define(ZOOM_OUT,    101).
+-define(TOGGLE_MAIL, 102).
+-define(TOGGLE_HIST, 103).
+-define(TOGGLE_ENV,  104).
+-define(TOGGLE_EXP,  105).
 
 -define(START_BUTTON,        400).
 
@@ -33,6 +37,7 @@
 -define(SYSTEM,         500).
 -define(STATUS,         501).
 -define(FRAME,          502).
+-define(MENU_VIEW,      503).
 -define(INPUT_TEXT,     510).
 -define(PID_TEXT,       511).
 -define(STEP_TEXT,      512).
@@ -59,6 +64,8 @@
 -define(PAGEPOS_MANU,  0).
 -define(PAGEPOS_SEMI,  1).
 -define(PAGEPOS_AUTO,  2).
+-define(PAGEPOS_TRACE, 0).
+-define(PAGEPOS_ROLL,  1).
 
 -define(NULL_LABEL, null_label).
 

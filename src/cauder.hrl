@@ -42,6 +42,11 @@
 -define(NULL_RULE, null_rule).
 -define(NULL_OPT,  null_opt).
 
+-define(PRINT_MAIL, print_mail).
+-define(PRINT_HIST, print_hist).
+-define(PRINT_ENV,  print_env).
+-define(PRINT_EXP,  print_exp).
+
 -record(proc, {pid,
                hist = [],
                env  = [],
