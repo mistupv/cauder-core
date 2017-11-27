@@ -20,6 +20,7 @@
          gen_log_send/2, gen_log_spawn/2, empty_log/1]).
 
 -include("cauder.hrl").
+-include_lib("wx/include/wx.hrl").
 
 %%--------------------------------------------------------------------
 %% @doc Searches a function definition in FunDefs with name FunName
@@ -235,22 +236,14 @@ replace(Var, SubExp, SuperExp) ->
 %% @end
 %%--------------------------------------------------------------------
 pp_system(#sys{msgs = Msgs, procs = Procs}, Opts) ->
-  [pp_msgs(Msgs),
-   "\n",
-   pp_procs(Procs, Opts)].
+  pp_msgs(Msgs) ++ "\n" ++ pp_procs(Procs, Opts).
 
 pp_msgs(Msgs) ->
   MsgsList = [pp_msg(Msg) || Msg <- Msgs],
-  ["GM: [",
-   string:join(MsgsList,","),
-   "]\n"].
+  "GM: [" ++ string:join(MsgsList,",") ++ "]\n".
 
 pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
-  ["(",
-   pp(DestPid),",{",
-   pp(MsgValue),",",
-   integer_to_list(Time),
-   "})"].
+  "(" ++ pp(DestPid) ++ ",{" ++ pp(MsgValue) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ "})".
 
 pp_procs(Procs, Opts) ->
   SortProcs = lists:sort(fun(P1, P2) -> P1#proc.pid < P2#proc.pid end, Procs),
@@ -258,30 +251,31 @@ pp_procs(Procs, Opts) ->
   string:join(ProcsList,"\n").
 
 pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}, Opts) ->
-  [pp_pid(Pid),": ",
-   pp_mail(Mail, Opts),
-   pp_hist(Hist, Opts),
-   pp_env(Env, Exp, Opts),
-   pp(Exp, Opts)].
+  pp_pre(Pid, Hist) ++
+  pp_mail(Mail, Opts) ++
+  pp_hist(Hist, Opts) ++
+  pp_env(Env, Exp, Opts)++
+  pp(Exp, Opts).
+
+pp_pre(Pid, Hist) ->
+  "=============== " ++ pp_pid(Pid) ++ " ===============\n".
 
 pp_pid(Pid) ->
-  ["P",pp(Pid)].
+  "P" ++ pp(Pid).
 
 pp_env(Env, Exp, Opts) ->
   case proplists:get_value(?PRINT_ENV, Opts) of
     false -> "";
-    true  -> [pp_env_1(Env, Exp),"\n"]
+    true  -> "E: " ++ pp_env_1(Env, Exp) ++ "\n"
   end.
 
 pp_env_1(Env, Exp) ->
   RelEnv =  rel_binds(Env,Exp),
   PairsList = [pp_pair(Var,Val) || {Var,Val} <- RelEnv],
-  ["{",
-   string:join(PairsList,", "),
-   "}"].
+  "{" ++ string:join(PairsList,", ") ++ "}".
 
 pp_pair(Var,Val) ->
-  [pp(Var)," -> ",pp(Val)].
+  pp(Var) ++ " -> " ++ pp(Val).
 
 is_conc_item({spawn,_,_,_}) -> true;
 is_conc_item({send,_,_,_,_}) -> true;
@@ -291,46 +285,43 @@ is_conc_item(_) -> false.
 pp_hist(Hist, Opts) ->
   case proplists:get_value(?PRINT_HIST, Opts) of
     false -> "";
-    true  -> [pp_hist_1(Hist),"\n"]
+    true  -> pp_hist_1(Hist) ++ "\n"
   end.
 
 pp_hist_1(Hist) ->
   FiltHist = lists:filter(fun is_conc_item/1, Hist),
   StrItems = [pp_hist_2(Item) || Item <- FiltHist],
-  ["[",
-   string:join(StrItems, ","),
-   "]"].
+  "H : [" ++ string:join(StrItems, ",") ++ "]".
 
+pp_hist_2({spawn,_,_,Pid}) ->
+  "spawn(" ++ [{?CAUDER_GREEN, pp(Pid)}] ++ ")";
 pp_hist_2({send,_,_,_,{Value,Time}}) ->
-  ["send(",pp(Value),",",integer_to_list(Time),")"];
+  "send(" ++ pp(Value) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ ")";
 pp_hist_2({rec,_,_,{Value,Time},_}) ->
-  ["rec(",pp(Value),",",integer_to_list(Time),")"].
+  "rec(" ++ pp(Value) ++ "," ++ [{?wxBLUE, integer_to_list(Time)}] ++ ")".
 
 pp_mail(Mail, Opts) ->
   case proplists:get_value(?PRINT_MAIL, Opts) of
     false -> "";
-    true  -> [pp_mail_1(Mail),"\n"]
+    true  -> "LM: " ++ pp_mail_1(Mail) ++ "\n"
   end.
 
 pp_mail_1([]) -> "[]";
 pp_mail_1(Mail) ->
   MailList = [pp_msg_mail(Val, Time) || {Val, Time} <- Mail],
-  ["[",
-   string:join(MailList,","),
-   "]"].
+  "[" ++ string:join(MailList,",") ++ "]".
 
 pp_msg_mail(Val, Time) ->
-  ["{",pp(Val),",",
-   integer_to_list(Time),"}"].
+  "{" ++ pp(Val) ++ "," ++  [{?CAUDER_GREEN, integer_to_list(Time)}] ++ "}".
 
 
 pp(CoreForm, Opts) ->
   case proplists:get_value(?PRINT_EXP, Opts) of
     false -> "";
-    true  -> [pp(CoreForm),"\n"]
+    true  -> "S: " ++ pp(CoreForm) ++ "\n"
   end.
 
-pp(CoreForm) -> core_pp:format(CoreForm).
+pp(CoreForm) -> lists:flatten(core_pp:format(CoreForm)).
 
 %%--------------------------------------------------------------------
 %% @doc Pretty-prints a given system trace

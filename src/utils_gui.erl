@@ -4,7 +4,8 @@
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
          set_choices/1, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
-         prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0]).
+         prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0,
+         pp_marked_text/2]).
 
 -include("cauder.hrl").
 -include("cauder_gui.hrl").
@@ -182,6 +183,29 @@ toggle_opts() ->
    {?PRINT_HIST, wxMenu:isChecked(MenuView, ?TOGGLE_HIST)},
    {?PRINT_ENV,  wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
    {?PRINT_EXP,  wxMenu:isChecked(MenuView, ?TOGGLE_EXP)}].
+
+marked(Ctrl, [], Acc) ->
+  wxTextCtrl:appendText(Ctrl, Acc);
+marked(Ctrl, [{Attr, Text}|Rest], Acc) ->
+  wxTextCtrl:appendText(Ctrl, Acc),
+  TextAttr = wxTextAttr:new(Attr),
+  Start = wxTextCtrl:getInsertionPoint(Ctrl),
+  wxTextCtrl:appendText(Ctrl, Text),
+  End = wxTextCtrl:getInsertionPoint(Ctrl),
+  wxTextCtrl:setStyle(Ctrl, Start, End, TextAttr),
+  marked(Ctrl, Rest, "");
+marked(Ctrl, [Text|Rest], Acc) ->
+  marked(Ctrl, Rest, Acc ++ [Text]).
+
+pp_marked_text(Ctrl, TextList) ->
+  % Freeze control when inserting text
+  wxTextCtrl:freeze(Ctrl),
+  wxTextCtrl:clear(Ctrl),
+  marked(Ctrl, TextList, ""),
+  % Put scroll back at the top
+  wxTextCtrl:setInsertionPoint(Ctrl, 0),
+  % Unfreeze control
+  wxTextCtrl:thaw(Ctrl).
 
 ref_lookup(Id) ->
     ets:lookup_element(?GUI_REF, Id, 2).

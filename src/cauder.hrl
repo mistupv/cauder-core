@@ -47,6 +47,8 @@
 -define(PRINT_ENV,  print_env).
 -define(PRINT_EXP,  print_exp).
 
+-define(CAUDER_GREEN, {34,139,34}).
+
 -record(proc, {pid,
                hist = [],
                env  = [],

@@ -58,7 +58,7 @@ setupLeftSizer(Parent) ->
 setupCodePanel(Parent) ->
   CodePanel = wxPanel:new(Parent),
   CodeText = wxTextCtrl:new(CodePanel, ?CODE_TEXT,
-                             [{style,?wxTE_MULTILINE bor ?wxTE_READONLY}]),
+                             [{style, ?wxTE_MULTILINE bor ?wxTE_READONLY}]),
   ref_add(?CODE_TEXT,CodeText),
 
 
@@ -525,7 +525,8 @@ refresh() ->
       StateText = ref_lookup(?STATE_TEXT),
       TraceText = ref_lookup(?TRACE_TEXT),
       RollLogText = ref_lookup(?ROLL_LOG_TEXT),
-      wxTextCtrl:setValue(StateText,utils:pp_system(System, ToggleOpts)),
+      MarkedText = utils:pp_system(System, ToggleOpts),
+      utils_gui:pp_marked_text(StateText, MarkedText),
       wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
       wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
   end.
