@@ -283,9 +283,10 @@ pp_env_1(Env, Exp) ->
 pp_pair(Var,Val) ->
   [pp(Var)," -> ",pp(Val)].
 
-is_send_rec({send,_,_,_,_}) -> true;
-is_send_rec({rec,_,_,_,_}) -> true;
-is_send_rec(_) -> false.
+is_conc_item({spawn,_,_,_}) -> true;
+is_conc_item({send,_,_,_,_}) -> true;
+is_conc_item({rec,_,_,_,_}) -> true;
+is_conc_item(_) -> false.
 
 pp_hist(Hist, Opts) ->
   case proplists:get_value(?PRINT_HIST, Opts) of
@@ -294,7 +295,7 @@ pp_hist(Hist, Opts) ->
   end.
 
 pp_hist_1(Hist) ->
-  FiltHist = lists:filter(fun is_send_rec/1, Hist),
+  FiltHist = lists:filter(fun is_conc_item/1, Hist),
   StrItems = [pp_hist_2(Item) || Item <- FiltHist],
   ["[",
    string:join(StrItems, ","),
