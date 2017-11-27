@@ -466,7 +466,7 @@ start(Fun,Args) ->
   utils_gui:stop_refs(),
   cauder:start_refs(FunDefs),
   init_system(Fun, Args),
-  refresh(),
+  refresh(true),
   LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
   wxNotebook:setSelection(LeftNotebook, ?PAGEPOS_STATE),
   {FunName, FunArity} = cerl:var_name(Fun),
@@ -514,21 +514,25 @@ disable_all_buttons() ->
   wxButton:disable(NormalizeButton).
   %wxButton:disable(RollButton).
 
-refresh() ->
+refresh(RefState) ->
   case utils_gui:is_app_running() of
     false -> ok;
     true ->
       System = ref_lookup(?SYSTEM),
       Options = cauder:eval_opts(System),
       refresh_buttons(Options),
-      ToggleOpts = utils_gui:toggle_opts(),
-      StateText = ref_lookup(?STATE_TEXT),
-      TraceText = ref_lookup(?TRACE_TEXT),
-      RollLogText = ref_lookup(?ROLL_LOG_TEXT),
-      MarkedText = utils:pp_system(System, ToggleOpts),
-      utils_gui:pp_marked_text(StateText, MarkedText),
-      wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
-      wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
+      case RefState of
+        false -> ok;
+        true  ->
+          ToggleOpts = utils_gui:toggle_opts(),
+          StateText = ref_lookup(?STATE_TEXT),
+          TraceText = ref_lookup(?TRACE_TEXT),
+          RollLogText = ref_lookup(?ROLL_LOG_TEXT),
+          MarkedText = utils:pp_system(System, ToggleOpts),
+          utils_gui:pp_marked_text(StateText, MarkedText),
+          wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
+          wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
+      end
   end.
 
 start() ->
@@ -666,20 +670,20 @@ loop() ->
           disable_all_buttons(),
           StepsDone = eval_norm(),
           utils_gui:sttext_norm(StepsDone),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll(),
           focus_roll_log(),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
           when (RuleButton >= ?FORW_INT_BUTTON) and (RuleButton =< ?BACK_SCH_BUTTON) ->
           disable_all_buttons(),
           exec_with(RuleButton),
           utils_gui:sttext_single(RuleButton),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
           when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
@@ -690,38 +694,38 @@ loop() ->
             {StepsDone, TotalSteps} ->
               utils_gui:sttext_mult(StepsDone, TotalSteps)
           end,
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_send(),
           focus_roll_log(),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?ROLL_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_spawn(),
           focus_roll_log(),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?ROLL_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_rec(),
           focus_roll_log(),
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?ROLL_VAR_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           disable_all_buttons(),
           eval_roll_var(),
           focus_roll_log(),
-          refresh(),
+          refresh(true),
           loop();
         %% -------------------- Text handlers -------------------- %%
         #wx{id = ?PID_TEXT, event = #wxCommand{type = command_text_updated}} ->
-          refresh(),
+          refresh(false),
           loop();
         #wx{id = ?STEP_TEXT, event = #wxCommand{type = command_text_updated}} ->
-          refresh(),
+          refresh(false),
           loop();
         #wx{id = _RestIds, event = #wxCommand{type = command_text_updated}} ->
           loop();
@@ -746,16 +750,16 @@ loop() ->
           zoomOut(),
           loop();
         #wx{id = ?TOGGLE_MAIL, event = #wxCommand{type = command_menu_selected}} ->
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?TOGGLE_HIST, event = #wxCommand{type = command_menu_selected}} ->
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?TOGGLE_ENV, event = #wxCommand{type = command_menu_selected}} ->
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?TOGGLE_EXP, event = #wxCommand{type = command_menu_selected}} ->
-          refresh(),
+          refresh(true),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),
