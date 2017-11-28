@@ -117,7 +117,9 @@ eval_norm_1(System, Steps) ->
 
 eval_roll(System, Pid, Steps) ->
   EmptyLogSystem = utils:empty_log(System),
-  eval_roll_1(EmptyLogSystem, Pid, Steps, 0).
+  {RolledSystem, StepsDone} = eval_roll_1(EmptyLogSystem, Pid, Steps, 0),
+  FocusLog = utils:must_focus_log(RolledSystem),
+  {FocusLog, RolledSystem, StepsDone}.
 
 eval_roll_1(System, _Pid, Steps, Steps) ->
   {System, Steps};
@@ -133,37 +135,45 @@ eval_roll_1(System, Pid, Steps, StepsDone) ->
 eval_roll_send(System, Id) ->
   case roll:can_roll_send(System, Id) of
     false ->
-      System;
+      {false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
-      roll:eval_roll_send(EmptyLogSystem, Id)
+      RolledSystem = roll:eval_roll_send(EmptyLogSystem, Id),
+      FocusLog = utils:must_focus_log(RolledSystem),
+      {FocusLog, RolledSystem}
   end.
 
 eval_roll_spawn(System, Id) ->
   case roll:can_roll_spawn(System, Id) of
     false ->
-      System;
+      {false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
-      roll:eval_roll_spawn(EmptyLogSystem, Id)
+      RolledSystem = roll:eval_roll_spawn(EmptyLogSystem, Id),
+      FocusLog = utils:must_focus_log(RolledSystem),
+      {FocusLog, RolledSystem}
   end.
 
 eval_roll_rec(System, Id) ->
   case roll:can_roll_rec(System, Id) of
     false ->
-      System;
+      {false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
-      roll:eval_roll_rec(EmptyLogSystem, Id)
+      RolledSystem = roll:eval_roll_rec(EmptyLogSystem, Id),
+      FocusLog = utils:must_focus_log(RolledSystem),
+      {FocusLog, RolledSystem}
   end.
 
 eval_roll_var(System, Id) ->
   case roll:can_roll_var(System, Id) of
     false ->
-      System;
+      {false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
-      roll:eval_roll_var(EmptyLogSystem, Id)
+      RolledSystem = roll:eval_roll_var(EmptyLogSystem, Id),
+      FocusLog = utils:must_focus_log(RolledSystem),
+      {FocusLog, RolledSystem}
   end.
 
 ref_add(Id, Ref) ->

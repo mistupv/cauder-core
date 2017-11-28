@@ -17,7 +17,7 @@
          filter_options/2, filter_procs_opts/1,
          has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
-         gen_log_send/2, gen_log_spawn/2, empty_log/1]).
+         gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -548,6 +548,13 @@ gen_log_spawn(_Pid, OtherPid) ->
 
 empty_log(System) ->
   System#sys{roll = []}.
+
+must_focus_log(System) ->
+  Trace = System#sys.roll,
+  case Trace of
+      [] -> false;
+      _  -> true
+  end.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
