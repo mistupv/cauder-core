@@ -665,7 +665,19 @@ eval_roll_var() ->
   case IdText of
     "" -> error;
     _ ->
-      NewSystem = cauder:eval_roll_var(System, cerl:c_var(list_to_atom(IdText))),
+      % Variables such as '@c1_X' appear as '_@c1_X'
+      % This case removes the "_" from the variable
+      % name if it is the first character
+      VarName =
+        case string:find(IdText, "_") of
+          no_match -> IdText;
+          Match when length(IdText) =:= length(Match) ->
+            string:slice(IdText, 1);
+          _ ->
+            IdText
+        end,
+      Var = cerl:c_var(list_to_atom(VarName)),
+      NewSystem = cauder:eval_roll_var(System, Var),
       ref_add(?SYSTEM, NewSystem)
   end.
 
