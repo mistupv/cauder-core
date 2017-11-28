@@ -16,6 +16,9 @@
 -define(TOGGLE_HIST, 103).
 -define(TOGGLE_ENV,  104).
 -define(TOGGLE_EXP,  105).
+-define(RADIO_CONC,  106).
+-define(RADIO_FULL,  107).
+
 
 -define(START_BUTTON,        400).
 

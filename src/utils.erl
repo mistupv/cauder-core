@@ -285,14 +285,22 @@ is_conc_item(_) -> false.
 pp_hist(Hist, Opts) ->
   case proplists:get_value(?PRINT_HIST, Opts) of
     false -> "";
-    true  -> pp_hist_1(Hist) ++ "\n"
+    true  -> pp_hist_1(Hist, Opts) ++ "\n"
   end.
 
-pp_hist_1(Hist) ->
-  FiltHist = lists:filter(fun is_conc_item/1, Hist),
+pp_hist_1(Hist, Opts) ->
+  FiltHist =
+    case proplists:get_value(?PRINT_FULL, Opts) of
+      false -> lists:filter(fun is_conc_item/1, Hist);
+      true  -> Hist
+    end,
   StrItems = [pp_hist_2(Item) || Item <- FiltHist],
   "H : [" ++ string:join(StrItems, ",") ++ "]".
 
+pp_hist_2({tau,_,_}) ->
+  "seq";
+pp_hist_2({self,_,_}) ->
+  "self";
 pp_hist_2({spawn,_,_,Pid}) ->
   "spawn(" ++ [{?CAUDER_GREEN, pp(Pid)}] ++ ")";
 pp_hist_2({send,_,_,_,{Value,Time}}) ->

@@ -182,7 +182,8 @@ toggle_opts() ->
   [{?PRINT_MAIL, wxMenu:isChecked(MenuView, ?TOGGLE_MAIL)},
    {?PRINT_HIST, wxMenu:isChecked(MenuView, ?TOGGLE_HIST)},
    {?PRINT_ENV,  wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
-   {?PRINT_EXP,  wxMenu:isChecked(MenuView, ?TOGGLE_EXP)}].
+   {?PRINT_EXP,  wxMenu:isChecked(MenuView, ?TOGGLE_EXP)},
+   {?PRINT_FULL, wxMenu:isChecked(MenuView, ?RADIO_FULL)}].
 
 marked(Ctrl, [], Acc) ->
   wxTextCtrl:appendText(Ctrl, Acc);

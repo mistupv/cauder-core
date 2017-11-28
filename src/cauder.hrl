@@ -46,6 +46,7 @@
 -define(PRINT_HIST, print_hist).
 -define(PRINT_ENV,  print_env).
 -define(PRINT_EXP,  print_exp).
+-define(PRINT_FULL, print_full).
 
 -define(CAUDER_GREEN, {34,139,34}).
 

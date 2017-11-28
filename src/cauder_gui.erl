@@ -385,10 +385,14 @@ setupMenu() ->
   ToggleHist = wxMenu:appendCheckItem(View, ?TOGGLE_HIST, "Toggle Histories \tCtrl-H"),
   ToggleEnv  = wxMenu:appendCheckItem(View, ?TOGGLE_ENV,  "Toggle Environments \tCtrl-T"),
   ToggleExp  = wxMenu:appendCheckItem(View, ?TOGGLE_EXP,  "Toggle Expressions \tCtrl-E"),
+  wxMenu:appendSeparator(View),
+  RadioConc  = wxMenu:appendRadioItem(View, ?RADIO_CONC, "Show Conc. History"),
+  _RadioFull = wxMenu:appendRadioItem(View, ?RADIO_FULL, "Show Full History"),
   wxMenuItem:check(ToggleMail),
   wxMenuItem:check(ToggleHist),
   wxMenuItem:check(ToggleEnv),
   wxMenuItem:check(ToggleExp),
+  wxMenuItem:check(RadioConc),
   wxMenu:appendSeparator(View),
   wxMenu:append(Help, ?ABOUT,    "About"),
   Frame = ref_lookup(?FRAME),
@@ -789,6 +793,12 @@ loop() ->
           refresh(true),
           loop();
         #wx{id = ?TOGGLE_EXP, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(true),
+          loop();
+        #wx{id = ?RADIO_CONC, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(true),
+          loop();
+        #wx{id = ?RADIO_FULL, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
