@@ -481,7 +481,8 @@ zoomOut() ->
 
 init_system(Fun, Args) ->
   Proc = #proc{pid = cerl:c_int(1),
-               exp = cerl:c_apply(Fun, Args)},
+               exp = cerl:c_apply(Fun, Args),
+               spf = cerl:var_name(Fun)},
   Procs = [Proc],
   Sched = utils_gui:sched_opt(),
   System = #sys{sched = Sched, procs = Procs},

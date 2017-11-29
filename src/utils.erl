@@ -250,18 +250,24 @@ pp_procs(Procs, Opts) ->
   ProcsList = [pp_proc(Proc, Opts) || Proc <- SortProcs],
   string:join(ProcsList,"\n").
 
-pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}, Opts) ->
-  pp_pre(Pid) ++
+pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail, spf = Fun}, Opts) ->
+  pp_pre(Pid, Fun) ++
   pp_mail(Mail, Opts) ++
   pp_hist(Hist, Opts) ++
   pp_env(Env, Exp, Opts)++
   pp(Exp, Opts).
 
-pp_pre(Pid) ->
-  "=============== " ++ pp_pid(Pid) ++ " ===============\n".
+pp_pre(Pid, Fun) ->
+  "=============== " ++ pp_pid(Pid) ++ ": " ++ pp_fun(Fun)++ " ===============\n".
 
 pp_pid(Pid) ->
   "Proc. " ++ pp(Pid).
+
+pp_fun(undef) ->
+  "";
+pp_fun({Name, Arity}) ->
+  atom_to_list(Name) ++ "/" ++ integer_to_list(Arity).
+
 
 pp_env(Env, Exp, Opts) ->
   case proplists:get_value(?PRINT_ENV, Opts) of

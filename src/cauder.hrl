@@ -57,7 +57,8 @@
                hist = [],
                env  = [],
                exp,
-               mail = []}).
+               mail = [],
+               spf  = undef}).
 
 -record(msg, {dest,
               val,
