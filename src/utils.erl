@@ -261,7 +261,7 @@ pp_pre(Pid) ->
   "=============== " ++ pp_pid(Pid) ++ " ===============\n".
 
 pp_pid(Pid) ->
-  "P" ++ pp(Pid).
+  "Proc. " ++ pp(Pid).
 
 pp_env(Env, Exp, Opts) ->
   case proplists:get_value(?PRINT_ENV, Opts) of

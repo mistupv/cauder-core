@@ -263,10 +263,10 @@ setupAutoPanel(Parent) ->
   wxSizer:addSpacer(AutoSizer, 15),
   wxSizer:add(AutoSizer, StepButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
   wxSizer:add(AutoSizer, HorizontalLine, [{flag, ?wxTOP bor ?wxBOTTOM},
-                                          {border, 15}]),
+                                          {border, 10}]),
   wxSizer:add(AutoSizer, SchedButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
   wxSizer:add(AutoSizer, HorizontalLine2, [{flag, ?wxTOP bor ?wxBOTTOM},
-                                          {border, 15}]),
+                                          {border, 10}]),
   wxSizer:add(AutoSizer, RollSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
 
   wxSizer:add(StepSizer, StepStaticText),
