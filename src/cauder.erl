@@ -77,20 +77,15 @@ eval_mult_1(System, Option, Steps, StepsDone) ->
       ?MULT_FWD -> fwd_sem;
       ?MULT_BWD -> bwd_sem
     end,
+  SelOpt = sched:select_opt(Sem, System),
   % Process reductions are given a higher
   % priority so that we obtain a fairer scheduling
-  Opts =
-    case Sem:eval_procs_opts(System) of
-      [] -> Sem:eval_sched_opts(System);
-      ProcsOpts -> ProcsOpts
-    end,
-  case Opts of
-    [] ->
+  case SelOpt of
+    none ->
       {System, StepsDone};
-    _Other ->
-      RandIdx = rand:uniform(length(Opts)),
-      RandOpt = lists:nth(RandIdx, Opts),
-      NewSystem = eval_step(System, RandOpt),
+    _ ->
+
+      NewSystem = eval_step(System, SelOpt),
       eval_mult_1(NewSystem, Option, Steps, StepsDone + 1)
   end.
 

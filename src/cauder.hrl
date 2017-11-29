@@ -48,6 +48,9 @@
 -define(PRINT_EXP,  print_exp).
 -define(PRINT_FULL, print_full).
 
+-define(SCHED_RANDOM,      random).
+-define(SCHED_PRIO_RANDOM, prio_random).
+
 -define(CAUDER_GREEN, {34,139,34}).
 
 -record(proc, {pid,
@@ -60,7 +63,8 @@
               val,
               time}).
 
--record(sys, {msgs  = [],
+-record(sys, {sched = ?SCHED_PRIO_RANDOM,
+              msgs  = [],
               procs = [],
               trace = [],
               roll  = []}).
