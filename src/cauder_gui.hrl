@@ -18,6 +18,8 @@
 -define(TOGGLE_EXP,  105).
 -define(RADIO_CONC,  106).
 -define(RADIO_FULL,  107).
+-define(RADIO_RAND,  108).
+-define(RADIO_PRIO,  109).
 
 
 -define(START_BUTTON,        400).
@@ -41,6 +43,7 @@
 -define(STATUS,         501).
 -define(FRAME,          502).
 -define(MENU_VIEW,      503).
+-define(MENU_SCHED,     504).
 -define(INPUT_TEXT,     510).
 -define(PID_TEXT,       511).
 -define(STEP_TEXT,      512).

@@ -371,10 +371,13 @@ setupMenu() ->
   MenuBar = wxMenuBar:new(),
   File = wxMenu:new(),
   View = wxMenu:new(),
+  Sched  = wxMenu:new(),
   Help = wxMenu:new(),
   ref_add(?MENU_VIEW, View),
+  ref_add(?MENU_SCHED, Sched),
   wxMenuBar:append(MenuBar, File, "&File"),
   wxMenuBar:append(MenuBar, View, "&View"),
+  wxMenuBar:append(MenuBar, Sched, "&Scheduler"),
   wxMenuBar:append(MenuBar, Help, "&Help"),
   wxMenu:append(File, ?OPEN,     "Open\tCtrl-O"),
   wxMenu:append(File, ?EXIT,     "Quit\tCtrl-Q"),
@@ -393,7 +396,10 @@ setupMenu() ->
   wxMenuItem:check(ToggleEnv),
   wxMenuItem:check(ToggleExp),
   wxMenuItem:check(RadioConc),
-  wxMenu:appendSeparator(View),
+  % wxMenu:appendSeparator(View),
+  _RadioRand = wxMenu:appendRadioItem(Sched, ?RADIO_RAND, "Random"),
+  RadioPrio = wxMenu:appendRadioItem(Sched, ?RADIO_PRIO, "Random (Prio. Proc.)"),
+  wxMenuItem:check(RadioPrio),
   wxMenu:append(Help, ?ABOUT,    "About"),
   Frame = ref_lookup(?FRAME),
   wxFrame:setMenuBar(Frame, MenuBar).
@@ -689,6 +695,22 @@ eval_roll_var() ->
       FocusLog
   end.
 
+set_sched(Button) ->
+  Status = ref_lookup(?STATUS),
+  Running = Status#status.running,
+  case Running of
+    true ->
+      System = ref_lookup(?SYSTEM),
+      Sched =
+        case Button of
+          ?RADIO_RAND -> ?SCHED_RANDOM;
+          ?RADIO_PRIO -> ?SCHED_PRIO_RANDOM
+        end,
+      NewSystem = System#sys{sched = Sched},
+      ref_add(?SYSTEM, NewSystem);
+    false -> ok
+  end.
+
 focus_roll_log(false) -> ok;
 focus_roll_log(true) ->
   RBotNotebook = ref_lookup(?RBOT_NOTEBOOK),
@@ -800,6 +822,12 @@ loop() ->
           loop();
         #wx{id = ?RADIO_FULL, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
+          loop();
+        #wx{id = ?RADIO_RAND, event = #wxCommand{type = command_menu_selected}} ->
+          set_sched(?RADIO_RAND),
+          loop();
+        #wx{id = ?RADIO_PRIO, event = #wxCommand{type = command_menu_selected}} ->
+          set_sched(?RADIO_PRIO),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),
