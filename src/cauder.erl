@@ -42,7 +42,6 @@ stop_refs() ->
   ?LOG("stopping refs"),
   ref_stop().
 
-
 %%--------------------------------------------------------------------
 %% @doc Returns all the evaluation options for a given System
 %% @end

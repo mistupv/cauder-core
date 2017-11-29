@@ -2,7 +2,8 @@
 -export([is_app_loaded/0, is_app_running/0,
          option_to_button_label/1, button_to_option/1,
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
-         set_choices/1, stop_refs/0, update_status_text/1,
+         set_choices/1, disable_all_buttons/0, enable_perm_buttons/0,
+         clear_texts/0, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
          prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0,
          pp_marked_text/2, sched_opt/0]).
@@ -106,11 +107,57 @@ set_ref_button_if(Ref, Cond) ->
       wxButton:disable(RefButton)
   end.
 
+disable_all_buttons() ->
+  ForwIntButton   = ref_lookup(?FORW_INT_BUTTON),
+  ForwSchButton   = ref_lookup(?FORW_SCH_BUTTON),
+  BackIntButton   = ref_lookup(?BACK_INT_BUTTON),
+  BackSchButton   = ref_lookup(?BACK_SCH_BUTTON),
+  ForwardButton   = ref_lookup(?FORWARD_BUTTON),
+  BackwardButton  = ref_lookup(?BACKWARD_BUTTON),
+  NormalizeButton = ref_lookup(?NORMALIZE_BUTTON),
+  RollButton      = ref_lookup(?ROLL_BUTTON),
+  RollSpawnButton = ref_lookup(?ROLL_SPAWN_BUTTON),
+  RollSendButton  = ref_lookup(?ROLL_SEND_BUTTON),
+  RollRecButton   = ref_lookup(?ROLL_REC_BUTTON),
+  RollVarButton   = ref_lookup(?ROLL_VAR_BUTTON),
+  wxButton:disable(ForwIntButton),
+  wxButton:disable(ForwSchButton),
+  wxButton:disable(BackIntButton),
+  wxButton:disable(BackSchButton),
+  wxButton:disable(ForwardButton),
+  wxButton:disable(BackwardButton),
+  wxButton:disable(NormalizeButton),
+  wxButton:disable(RollButton),
+  wxButton:disable(RollSpawnButton),
+  wxButton:disable(RollSendButton),
+  wxButton:disable(RollRecButton),
+  wxButton:disable(RollVarButton).
+
+enable_perm_buttons() ->
+  RollButton      = ref_lookup(?ROLL_BUTTON),
+  RollSpawnButton = ref_lookup(?ROLL_SPAWN_BUTTON),
+  RollSendButton  = ref_lookup(?ROLL_SEND_BUTTON),
+  RollRecButton   = ref_lookup(?ROLL_REC_BUTTON),
+  RollVarButton   = ref_lookup(?ROLL_VAR_BUTTON),
+  wxButton:enable(RollButton),
+  wxButton:enable(RollSpawnButton),
+  wxButton:enable(RollSendButton),
+  wxButton:enable(RollRecButton),
+  wxButton:enable(RollVarButton).
+
 set_choices(Choices) ->
   FunChoice = ref_lookup(?FUN_CHOICE),
   wxChoice:clear(FunChoice),
   [wxChoice:append(FunChoice, Choice) || Choice <- Choices],
   wxChoice:setSelection(FunChoice, 0).
+
+clear_texts() ->
+  StateText = ref_lookup(?STATE_TEXT),
+  TraceText = ref_lookup(?TRACE_TEXT),
+  RollLogText = ref_lookup(?ROLL_LOG_TEXT),
+  wxTextCtrl:clear(StateText),
+  wxTextCtrl:clear(TraceText),
+  wxTextCtrl:clear(RollLogText).
 
 stop_refs() ->
   case is_app_running() of

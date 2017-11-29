@@ -246,7 +246,7 @@ setupAutoPanel(Parent) ->
   wxButton:disable(ForwardButton),
   wxButton:disable(BackwardButton),
   wxButton:disable(NormalizeButton),
-  %wxButton:disable(RollButton),
+  wxButton:disable(RollButton),
   ref_add(?FORWARD_BUTTON, ForwardButton),
   ref_add(?BACKWARD_BUTTON, BackwardButton),
   ref_add(?NORMALIZE_BUTTON, NormalizeButton),
@@ -323,6 +323,10 @@ setupRollPanel(Parent) ->
                                [{label, "Roll var"},
                                 {size, {85, -1}}]),
 
+  wxButton:disable(RollSpawnButton),
+  wxButton:disable(RollSendButton),
+  wxButton:disable(RollRecButton),
+  wxButton:disable(RollVarButton),
   ref_add(?ROLL_SPAWN_BUTTON, RollSpawnButton),
   ref_add(?ROLL_SEND_BUTTON, RollSendButton),
   ref_add(?ROLL_REC_BUTTON, RollRecButton),
@@ -396,7 +400,7 @@ setupMenu() ->
   wxMenuItem:check(ToggleEnv),
   wxMenuItem:check(ToggleExp),
   wxMenuItem:check(RadioConc),
-  % wxMenu:appendSeparator(View),
+  wxMenu:appendSeparator(View),
   _RadioRand = wxMenu:appendRadioItem(Sched, ?RADIO_RAND, "Random"),
   RadioPrio = wxMenu:appendRadioItem(Sched, ?RADIO_PRIO, "Random (Prio. Proc.)"),
   wxMenuItem:check(RadioPrio),
@@ -423,6 +427,8 @@ loadFile(File) ->
       LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
       wxNotebook:setSelection(LeftNotebook, ?PAGEPOS_CODE),
       utils_gui:set_choices(utils:moduleNames(CleanCoreForms)),
+      utils_gui:disable_all_buttons(),
+      utils_gui:clear_texts(),
       InputSizer = ref_lookup(?INPUT_SIZER),
       wxSizer:layout(InputSizer),
       StartButton = ref_lookup(?START_BUTTON),
@@ -520,24 +526,6 @@ refresh_buttons(Options) ->
   utils_gui:set_ref_button_if(?BACKWARD_BUTTON, HasBwdOptions),
   utils_gui:set_ref_button_if(?NORMALIZE_BUTTON, HasNormOptions).
 
-disable_all_buttons() ->
-  ForwIntButton   = ref_lookup(?FORW_INT_BUTTON),
-  ForwSchButton   = ref_lookup(?FORW_SCH_BUTTON),
-  BackIntButton   = ref_lookup(?BACK_INT_BUTTON),
-  BackSchButton   = ref_lookup(?BACK_SCH_BUTTON),
-  ForwardButton   = ref_lookup(?FORWARD_BUTTON),
-  BackwardButton  = ref_lookup(?BACKWARD_BUTTON),
-  NormalizeButton = ref_lookup(?NORMALIZE_BUTTON),
-  %RollButton      = ref_lookup(?ROLL_BUTTON),
-  wxButton:disable(ForwIntButton),
-  wxButton:disable(ForwSchButton),
-  wxButton:disable(BackIntButton),
-  wxButton:disable(BackSchButton),
-  wxButton:disable(ForwardButton),
-  wxButton:disable(BackwardButton),
-  wxButton:disable(NormalizeButton).
-  %wxButton:disable(RollButton).
-
 refresh(RefState) ->
   case utils_gui:is_app_running() of
     false -> ok;
@@ -545,6 +533,7 @@ refresh(RefState) ->
       System = ref_lookup(?SYSTEM),
       Options = cauder:eval_opts(System),
       refresh_buttons(Options),
+      utils_gui:enable_perm_buttons(),
       case RefState of
         false -> ok;
         true  ->
@@ -720,27 +709,27 @@ loop() ->
           start(),
           loop();
         #wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           StepsDone = eval_norm(),
           utils_gui:sttext_norm(StepsDone),
           refresh(true),
           loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           {MustFocus, _, _} = eval_roll(),
           focus_roll_log(MustFocus),
           refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
           when (RuleButton >= ?FORW_INT_BUTTON) and (RuleButton =< ?BACK_SCH_BUTTON) ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           exec_with(RuleButton),
           utils_gui:sttext_single(RuleButton),
           refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
           when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           case eval_mult(RuleButton) of
             error ->
               utils_gui:update_status_text(?ERROR_NUM_STEP);
@@ -750,25 +739,25 @@ loop() ->
           refresh(true),
           loop();
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           MustFocus = eval_roll_send(),
           focus_roll_log(MustFocus),
           refresh(true),
           loop();
         #wx{id = ?ROLL_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           MustFocus = eval_roll_spawn(),
           focus_roll_log(MustFocus),
           refresh(true),
           loop();
         #wx{id = ?ROLL_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           MustFocus = eval_roll_rec(),
           focus_roll_log(MustFocus),
           refresh(true),
           loop();
         #wx{id = ?ROLL_VAR_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          disable_all_buttons(),
+          utils_gui:disable_all_buttons(),
           MustFocus = eval_roll_var(),
           focus_roll_log(MustFocus),
           refresh(true),
