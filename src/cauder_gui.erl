@@ -477,7 +477,8 @@ init_system(Fun, Args) ->
   Proc = #proc{pid = cerl:c_int(1),
                exp = cerl:c_apply(Fun, Args)},
   Procs = [Proc],
-  System = #sys{procs = Procs},
+  Sched = utils_gui:sched_opt(),
+  System = #sys{sched = Sched, procs = Procs},
   ref_add(?SYSTEM, System),
   Status = ref_lookup(?STATUS),
   NewStatus = Status#status{running = true},
@@ -695,17 +696,13 @@ eval_roll_var() ->
       FocusLog
   end.
 
-set_sched(Button) ->
+set_sched() ->
   Status = ref_lookup(?STATUS),
   Running = Status#status.running,
+  Sched   = utils_gui:sched_opt(),
   case Running of
     true ->
       System = ref_lookup(?SYSTEM),
-      Sched =
-        case Button of
-          ?RADIO_RAND -> ?SCHED_RANDOM;
-          ?RADIO_PRIO -> ?SCHED_PRIO_RANDOM
-        end,
       NewSystem = System#sys{sched = Sched},
       ref_add(?SYSTEM, NewSystem);
     false -> ok
@@ -824,10 +821,10 @@ loop() ->
           refresh(true),
           loop();
         #wx{id = ?RADIO_RAND, event = #wxCommand{type = command_menu_selected}} ->
-          set_sched(?RADIO_RAND),
+          set_sched(),
           loop();
         #wx{id = ?RADIO_PRIO, event = #wxCommand{type = command_menu_selected}} ->
-          set_sched(?RADIO_PRIO),
+          set_sched(),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),

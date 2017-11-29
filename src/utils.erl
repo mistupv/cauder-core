@@ -251,13 +251,13 @@ pp_procs(Procs, Opts) ->
   string:join(ProcsList,"\n").
 
 pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail}, Opts) ->
-  pp_pre(Pid, Hist) ++
+  pp_pre(Pid) ++
   pp_mail(Mail, Opts) ++
   pp_hist(Hist, Opts) ++
   pp_env(Env, Exp, Opts)++
   pp(Exp, Opts).
 
-pp_pre(Pid, Hist) ->
+pp_pre(Pid) ->
   "=============== " ++ pp_pid(Pid) ++ " ===============\n".
 
 pp_pid(Pid) ->

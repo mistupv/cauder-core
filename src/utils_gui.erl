@@ -5,7 +5,7 @@
          set_choices/1, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
          prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0,
-         pp_marked_text/2]).
+         pp_marked_text/2, sched_opt/0]).
 
 -include("cauder.hrl").
 -include("cauder_gui.hrl").
@@ -184,6 +184,13 @@ toggle_opts() ->
    {?PRINT_ENV,  wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
    {?PRINT_EXP,  wxMenu:isChecked(MenuView, ?TOGGLE_EXP)},
    {?PRINT_FULL, wxMenu:isChecked(MenuView, ?RADIO_FULL)}].
+
+sched_opt() ->
+  MenuSched = ref_lookup(?MENU_SCHED),
+  SchedOpts =
+    [{wxMenu:isChecked(MenuSched, ?RADIO_RAND), ?SCHED_RANDOM},
+     {wxMenu:isChecked(MenuSched, ?RADIO_PRIO), ?SCHED_PRIO_RANDOM}],
+  proplists:get_value(true, SchedOpts).
 
 marked(Ctrl, [], Acc) ->
   wxTextCtrl:appendText(Ctrl, Acc);

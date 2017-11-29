@@ -10,7 +10,7 @@ select_opt(Sem, System) ->
 select_opt(Sem, System, ?SCHED_RANDOM) ->
    Opts = Sem:eval_opts(System),
    select_rand(Opts);
-select_opt(Sem, System, ?SCHED_PRIO_RANDOM) ->   
+select_opt(Sem, System, ?SCHED_PRIO_RANDOM) ->
    Opts =
    case Sem:eval_procs_opts(System) of
       [] -> Sem:eval_sched_opts(System);

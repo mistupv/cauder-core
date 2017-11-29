@@ -78,13 +78,10 @@ eval_mult_1(System, Option, Steps, StepsDone) ->
       ?MULT_BWD -> bwd_sem
     end,
   SelOpt = sched:select_opt(Sem, System),
-  % Process reductions are given a higher
-  % priority so that we obtain a fairer scheduling
   case SelOpt of
     none ->
       {System, StepsDone};
     _ ->
-
       NewSystem = eval_step(System, SelOpt),
       eval_mult_1(NewSystem, Option, Steps, StepsDone + 1)
   end.
