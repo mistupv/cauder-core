@@ -532,8 +532,6 @@ refresh(RefState) ->
     true ->
       System = ref_lookup(?SYSTEM),
       Options = cauder:eval_opts(System),
-      refresh_buttons(Options),
-      utils_gui:enable_perm_buttons(),
       case RefState of
         false -> ok;
         true  ->
@@ -545,7 +543,9 @@ refresh(RefState) ->
           utils_gui:pp_marked_text(StateText, MarkedText),
           wxTextCtrl:setValue(TraceText,utils:pp_trace(System)),
           wxTextCtrl:setValue(RollLogText,utils:pp_roll_log(System))
-      end
+      end,
+      refresh_buttons(Options),
+      utils_gui:enable_perm_buttons()
   end.
 
 start() ->
