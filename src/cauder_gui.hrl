@@ -20,6 +20,8 @@
 -define(RADIO_FULL,  107).
 -define(RADIO_RAND,  108).
 -define(RADIO_PRIO,  109).
+-define(RADIO_REL_ENV,  110).
+-define(RADIO_FULL_ENV, 111).
 
 
 -define(START_BUTTON,        400).

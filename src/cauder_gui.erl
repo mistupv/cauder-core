@@ -395,12 +395,16 @@ setupMenu() ->
   wxMenu:appendSeparator(View),
   RadioConc  = wxMenu:appendRadioItem(View, ?RADIO_CONC, "Show Conc. History"),
   _RadioFull = wxMenu:appendRadioItem(View, ?RADIO_FULL, "Show Full History"),
+    wxMenu:appendSeparator(View),
+  RadioRelEnv   = wxMenu:appendRadioItem(View, ?RADIO_REL_ENV, "Show Relevant Environment"),
+  _RadioFullEnv = wxMenu:appendRadioItem(View, ?RADIO_FULL_ENV, "Show Full Environment"),
+  wxMenu:appendSeparator(View),
   wxMenuItem:check(ToggleMail),
   wxMenuItem:check(ToggleHist),
   wxMenuItem:check(ToggleEnv),
   wxMenuItem:check(ToggleExp),
   wxMenuItem:check(RadioConc),
-  wxMenu:appendSeparator(View),
+  wxMenuItem:check(RadioRelEnv),
   _RadioRand = wxMenu:appendRadioItem(Sched, ?RADIO_RAND, "Random"),
   RadioPrio = wxMenu:appendRadioItem(Sched, ?RADIO_PRIO, "Random (Prio. Proc.)"),
   wxMenuItem:check(RadioPrio),
@@ -808,6 +812,12 @@ loop() ->
           refresh(true),
           loop();
         #wx{id = ?RADIO_FULL, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(true),
+          loop();
+        #wx{id = ?RADIO_REL_ENV, event = #wxCommand{type = command_menu_selected}} ->
+          refresh(true),
+          loop();
+        #wx{id = ?RADIO_FULL_ENV, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
           loop();
         #wx{id = ?RADIO_RAND, event = #wxCommand{type = command_menu_selected}} ->

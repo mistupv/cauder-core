@@ -47,6 +47,7 @@
 -define(PRINT_ENV,  print_env).
 -define(PRINT_EXP,  print_exp).
 -define(PRINT_FULL, print_full).
+-define(PRINT_FULL_ENV, print_full_env).
 
 -define(SCHED_RANDOM,      random).
 -define(SCHED_PRIO_RANDOM, prio_random).

@@ -272,12 +272,16 @@ pp_fun({Name, Arity}) ->
 pp_env(Env, Exp, Opts) ->
   case proplists:get_value(?PRINT_ENV, Opts) of
     false -> "";
-    true  -> "E: " ++ pp_env_1(Env, Exp) ++ "\n"
+    true  -> "E: " ++ pp_env_1(Env, Exp, Opts) ++ "\n"
   end.
 
-pp_env_1(Env, Exp) ->
-  RelEnv =  rel_binds(Env,Exp),
-  PairsList = [pp_pair(Var,Val) || {Var,Val} <- RelEnv],
+pp_env_1(Env, Exp, Opts) ->
+  PrintEnv =
+    case proplists:get_value(?PRINT_FULL_ENV, Opts) of
+      true  -> Env;
+      false -> rel_binds(Env, Exp)
+    end,
+  PairsList = [pp_pair(Var,Val) || {Var,Val} <- PrintEnv],
   "{" ++ string:join(PairsList,", ") ++ "}".
 
 pp_pair(Var,Val) ->
