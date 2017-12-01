@@ -379,7 +379,7 @@ setupMenu() ->
   Sched  = wxMenu:new(),
   Help = wxMenu:new(),
   ref_add(?MENU_VIEW, View),
-  ref_add(?MENU_COMP, View),
+  ref_add(?MENU_COMP, Compile),
   ref_add(?MENU_SCHED, Sched),
   wxMenuBar:append(MenuBar, File, "&File"),
   wxMenuBar:append(MenuBar, View, "&View"),
@@ -419,7 +419,14 @@ setupMenu() ->
 
 loadFile(File) ->
   Frame = ref_lookup(?FRAME),
-  case compile:file(File, [to_core,binary]) of
+  ToggleOpts = utils_gui:toggle_opts(),
+  AddOptimize = proplists:get_value(?COMP_OPT, ToggleOpts),
+  CompOpts =
+    case AddOptimize of
+      true  -> [to_core,binary];
+      false -> [to_core,binary, no_copt]
+    end,
+  case compile:file(File, CompOpts) of
     {ok, _, CoreForms} ->
       NoAttsCoreForms = cerl:update_c_module(CoreForms,
                                              cerl:module_name(CoreForms),

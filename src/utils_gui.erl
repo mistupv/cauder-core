@@ -230,11 +230,13 @@ sort_opts(Opts) ->
 
 toggle_opts() ->
   MenuView = ref_lookup(?MENU_VIEW),
+  MenuComp = ref_lookup(?MENU_COMP),
   [{?PRINT_MAIL,     wxMenu:isChecked(MenuView, ?TOGGLE_MAIL)},
    {?PRINT_HIST,     wxMenu:isChecked(MenuView, ?TOGGLE_HIST)},
    {?PRINT_ENV,      wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
    {?PRINT_EXP,      wxMenu:isChecked(MenuView, ?TOGGLE_EXP)},
    {?PRINT_FULL,     wxMenu:isChecked(MenuView, ?RADIO_FULL)},
+   {?COMP_OPT,       wxMenu:isChecked(MenuComp, ?TOGGLE_COMP)},
    {?PRINT_FULL_ENV, wxMenu:isChecked(MenuView, ?RADIO_FULL_ENV)}].
 
 sched_opt() ->
