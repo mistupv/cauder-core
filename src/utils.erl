@@ -272,7 +272,7 @@ pp_fun({Name, Arity}) ->
 pp_env(Env, Exp, Opts) ->
   case proplists:get_value(?PRINT_ENV, Opts) of
     false -> "";
-    true  -> "E: " ++ pp_env_1(Env, Exp, Opts) ++ "\n"
+    true  -> "ENV: " ++ pp_env_1(Env, Exp, Opts) ++ "\n"
   end.
 
 pp_env_1(Env, Exp, Opts) ->
@@ -336,7 +336,7 @@ pp_msg_mail(Val, Time) ->
 pp(CoreForm, Opts) ->
   case proplists:get_value(?PRINT_EXP, Opts) of
     false -> "";
-    true  -> "S: " ++ pp(CoreForm) ++ "\n"
+    true  -> "EXP: " ++ pp(CoreForm) ++ "\n"
   end.
 
 pp(CoreForm) -> lists:flatten(core_pp:format(CoreForm)).
