@@ -4,7 +4,7 @@
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
          set_choices/1, disable_all_buttons/0, enable_perm_buttons/0,
          clear_texts/0, stop_refs/0, update_status_text/1,
-         sttext_single/1, sttext_mult/2, sttext_norm/1,
+         sttext_single/1, sttext_mult/2, sttext_norm/1, sttext_comp/0,
          prev_font_size/1, next_font_size/1, sort_opts/1, toggle_opts/0,
          pp_marked_text/2, sched_opt/0]).
 
@@ -193,6 +193,10 @@ sttext_mult(StepsDone, Steps) ->
   StepsDoneStr = integer_to_list(StepsDone),
   StepsStr = integer_to_list(Steps),
   FullStr = StepsDoneStr ++ " of " ++ StepsStr ++ " steps done",
+  update_status_text(FullStr).
+
+sttext_comp() ->
+  FullStr = "Compiler options have changed, open file again to take effect",
   update_status_text(FullStr).
 
 update_status_text(String) ->

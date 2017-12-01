@@ -825,6 +825,9 @@ loop() ->
         #wx{id = ?RADIO_FULL_ENV, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
           loop();
+        #wx{id = ?TOGGLE_COMP, event = #wxCommand{type = command_menu_selected}} ->
+          utils_gui:sttext_comp(),
+          loop();
         #wx{id = ?RADIO_RAND, event = #wxCommand{type = command_menu_selected}} ->
           set_sched(),
           loop();
