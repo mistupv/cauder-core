@@ -1,4 +1,4 @@
--module(dining_simple).
+-module(dining_bug).
 -export([main/0, waiter/1, fork/1, philo/2]).
 
 main() ->
@@ -30,7 +30,8 @@ waiter_1(ForkDict, PhiloDict) ->
       {eaten, PhiloPid} ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
         LeftForkId = PhiloId,
-        RightForkId =  1 + (LeftForkId rem 5),
+        % RightForkId =  1 + (LeftForkId rem 5), % Correct version
+        RightForkId =  1 + (5 rem LeftForkId),   % Bugged version
         LeftPid = proplists:get_value(LeftForkId, ForkDict),
         RightPid = proplists:get_value(RightForkId, ForkDict),
         set_state(LeftPid, free),
@@ -57,15 +58,13 @@ waiter_1(ForkDict, PhiloDict) ->
 ask_state(Pid) ->
   Pid ! {get_state, self()},
   receive
-    {state, State, _} -> State % Correct version
-    % State -> State           % Bugged version
+    {state, State, _} -> State
   end.
 
 set_state(Pid, State) ->
   Pid ! {set_state, State, self()},
   receive
-    {been_set, _} -> ok % Correct version
-    % been_set -> ok    % Bugged version   
+    {been_set, _} -> ok
   end.
 
 philo(WaiterPid, PhiloId) ->
@@ -99,11 +98,9 @@ request_until_eaten(WaiterPid, PhiloId) ->
 fork(State) ->
   receive
     {get_state, WaiterPid} ->
-      WaiterPid ! {state, State, self()}, % Correct version
-      % WaiterPid ! State,                % Bugged version
+      WaiterPid ! {state, State, self()},
       fork(State);
     {set_state, NewState, WaiterPid} ->
-      WaiterPid ! {been_set, self()}, % Correct version
-      % WaiterPid ! been_set,         % Bugged version
+      WaiterPid ! {been_set, self()},
       fork(NewState)
   end. 

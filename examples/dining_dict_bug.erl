@@ -1,4 +1,4 @@
--module(dining_dict).
+-module(dining_dict_bug).
 -export([main/0, waiter/1, philo/2]).
 
 
@@ -56,8 +56,8 @@ pick_up_forks(PhiloPid, LeftForkId, RightForkId, ForkDict) ->
 put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
   PhiloId = proplists:get_value(PhiloPid, PhiloDict),
   LeftForkId  = PhiloId,
-  RightForkId = 1 + (LeftForkId rem 5),   % Correct version
-  % RightForkId = 1 + (5 rem LeftForkId), % Bugged version
+  % RightForkId = 1 + (LeftForkId rem 5), % Correct version
+  RightForkId = 1 + (5 rem LeftForkId),   % Bugged version
   TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, free}),
   NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, free}),
   NewForkDict.
