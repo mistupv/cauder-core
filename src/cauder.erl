@@ -126,45 +126,45 @@ eval_roll_1(System, Pid, Steps, StepsDone) ->
 eval_roll_send(System, Id) ->
   case roll:can_roll_send(System, Id) of
     false ->
-      {false, System};
+      {false, false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
       RolledSystem = roll:eval_roll_send(EmptyLogSystem, Id),
       FocusLog = utils:must_focus_log(RolledSystem),
-      {FocusLog, RolledSystem}
+      {true, FocusLog, RolledSystem}
   end.
 
 eval_roll_spawn(System, Id) ->
   case roll:can_roll_spawn(System, Id) of
     false ->
-      {false, System};
+      {false, false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
       RolledSystem = roll:eval_roll_spawn(EmptyLogSystem, Id),
       FocusLog = utils:must_focus_log(RolledSystem),
-      {FocusLog, RolledSystem}
+      {true, FocusLog, RolledSystem}
   end.
 
 eval_roll_rec(System, Id) ->
   case roll:can_roll_rec(System, Id) of
     false ->
-      {false, System};
+      {false, false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
       RolledSystem = roll:eval_roll_rec(EmptyLogSystem, Id),
       FocusLog = utils:must_focus_log(RolledSystem),
-      {FocusLog, RolledSystem}
+      {true, FocusLog, RolledSystem}
   end.
 
 eval_roll_var(System, Id) ->
   case roll:can_roll_var(System, Id) of
     false ->
-      {false, System};
+      {false, false, System};
     true ->
       EmptyLogSystem = utils:empty_log(System),
       RolledSystem = roll:eval_roll_var(EmptyLogSystem, Id),
       FocusLog = utils:must_focus_log(RolledSystem),
-      {FocusLog, RolledSystem}
+      {true, FocusLog, RolledSystem}
   end.
 
 ref_add(Id, Ref) ->

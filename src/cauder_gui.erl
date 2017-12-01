@@ -645,11 +645,11 @@ eval_roll_send() ->
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   {Id, _} = string:to_integer(IdText),
   case Id of
-    error -> false;
+    error -> {false, ok, false};
     _ ->
-      {FocusLog, NewSystem} = cauder:eval_roll_send(System, Id),
+      {CanRoll, FocusLog, NewSystem} = cauder:eval_roll_send(System, Id),
       ref_add(?SYSTEM, NewSystem),
-      FocusLog
+      {CanRoll, IdText, FocusLog}
   end.
 
 eval_roll_spawn() ->
@@ -658,11 +658,11 @@ eval_roll_spawn() ->
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   {Id, _} = string:to_integer(IdText),
   case Id of
-    error -> false;
+    error -> {false, ok, false};
     _ ->
-      {FocusLog, NewSystem} = cauder:eval_roll_spawn(System, cerl:c_int(Id)),
+      {CanRoll, FocusLog, NewSystem} = cauder:eval_roll_spawn(System, cerl:c_int(Id)),
       ref_add(?SYSTEM, NewSystem),
-      FocusLog
+      {CanRoll, IdText, FocusLog}
   end.
 
 eval_roll_rec() ->
@@ -671,11 +671,11 @@ eval_roll_rec() ->
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   {Id, _} = string:to_integer(IdText),
   case Id of
-    error -> false;
+    error -> {false, ok, false};
     _ ->
-      {FocusLog, NewSystem} = cauder:eval_roll_rec(System, Id),
+      {CanRoll, FocusLog, NewSystem} = cauder:eval_roll_rec(System, Id),
       ref_add(?SYSTEM, NewSystem),
-      FocusLog
+      {CanRoll, IdText, FocusLog}
   end.
 
 eval_roll_var() ->
@@ -683,7 +683,7 @@ eval_roll_var() ->
   IdTextCtrl = ref_lookup(?ROLL_VAR_ID_TEXT),
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   case IdText of
-    "" -> false;
+    "" -> {false, ok, false};
     _ ->
       % Variables such as '@c1_X' appear as '_@c1_X'
       % This case removes the "_" from the variable
@@ -697,9 +697,9 @@ eval_roll_var() ->
             IdText
         end,
       Var = cerl:c_var(list_to_atom(VarName)),
-      {FocusLog, NewSystem} = cauder:eval_roll_var(System, Var),
+      {CanRoll, FocusLog, NewSystem} = cauder:eval_roll_var(System, Var),
       ref_add(?SYSTEM, NewSystem),
-      FocusLog
+      {CanRoll, VarName, FocusLog}
   end.
 
 set_sched() ->
@@ -733,7 +733,8 @@ loop() ->
           loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          {MustFocus, _, _} = eval_roll(),
+          {MustFocus, StepsDone, TotalSteps} = eval_roll(),
+          utils_gui:sttext_roll(StepsDone, TotalSteps),
           focus_roll_log(MustFocus),
           refresh(true),
           loop();
@@ -757,27 +758,31 @@ loop() ->
           loop();
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          MustFocus = eval_roll_send(),
+          {HasRolled, SendId, MustFocus} = eval_roll_send(),
+          utils_gui:sttext_roll_send(HasRolled, SendId),
           focus_roll_log(MustFocus),
-          refresh(true),
+          refresh(HasRolled),
           loop();
         #wx{id = ?ROLL_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          MustFocus = eval_roll_spawn(),
+          {HasRolled, SpawnId, MustFocus} = eval_roll_spawn(),
+          utils_gui:sttext_roll_spawn(HasRolled, SpawnId),
           focus_roll_log(MustFocus),
-          refresh(true),
+          refresh(HasRolled),
           loop();
         #wx{id = ?ROLL_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          MustFocus = eval_roll_rec(),
+          {HasRolled, RecId, MustFocus} = eval_roll_rec(),
+          utils_gui:sttext_roll_rec(HasRolled, RecId),
           focus_roll_log(MustFocus),
-          refresh(true),
+          refresh(HasRolled),
           loop();
         #wx{id = ?ROLL_VAR_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          MustFocus = eval_roll_var(),
+          {HasRolled, VarId, MustFocus} = eval_roll_var(),
+          utils_gui:sttext_roll_var(HasRolled, VarId),
           focus_roll_log(MustFocus),
-          refresh(true),
+          refresh(HasRolled),
           loop();
         %% -------------------- Text handlers -------------------- %%
         #wx{id = ?PID_TEXT, event = #wxCommand{type = command_text_updated}} ->
