@@ -80,5 +80,22 @@
 -define(NULL_LABEL, null_label).
 
 -define(INFO_TEXT, "A Causal-consistent Debugger for Erlang. More info at: https://github.com/mistupv/cauder").
+
 -define(ERROR_NUM_STEP, "The number of steps is not correct.").
 -define(ERROR_NUM_ARGS, "The number of arguments is not correct.").
+
+-define(HELP_OPEN_ITEM,      "Open and compile an Erlang file").
+-define(HELP_QUIT_ITEM,      "Quit this program").
+-define(HELP_ZOOM_IN_ITEM,   "Increase text font size").
+-define(HELP_ZOOM_OUT_ITEM,  "Decrease text font size").
+-define(HELP_TOGGLE_MAIL,    "Show or hide process mailboxes").
+-define(HELP_TOGGLE_HIST,    "Show or hide process histories").
+-define(HELP_TOGGLE_ENV,     "Show or hide process environments").
+-define(HELP_TOGGLE_EXP,     "Show or hide process expressions").
+-define(HELP_RADIO_CONC,     "Show only concurrent history").
+-define(HELP_RADIO_FULL,     "Show complete history").
+-define(HELP_RADIO_REN_ENV,  "Show relevant bindings from environment").
+-define(HELP_RADIO_FULL_ENV, "Show all bindings from environment").
+-define(HELP_TOGGLE_COMP,    "Allow compiler optimizations when loading files").
+-define(HELP_RADIO_RAND,     "Set scheduler to random choice among options").
+-define(HELP_RADIO_PRIO,     "Set scheduler to random choice among options (priority to process options)").
