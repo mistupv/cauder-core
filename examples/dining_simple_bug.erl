@@ -58,14 +58,14 @@ ask_state(Pid) ->
   Pid ! {get_state, self()},
   receive
     % {state, State, _} -> State % Correct version
-    State -> State               % Bugged version
+    State -> State               % Buggy version
   end.
 
 set_state(Pid, State) ->
   Pid ! {set_state, State, self()},
   receive
     % {been_set, _} -> ok % Correct version
-    been_set -> ok        % Bugged version   
+    been_set -> ok        % Buggy version
   end.
 
 philo(WaiterPid, PhiloId) ->
@@ -100,10 +100,10 @@ fork(State) ->
   receive
     {get_state, WaiterPid} ->
       % WaiterPid ! {state, State, self()}, % Correct version
-      WaiterPid ! State,                    % Bugged version
+      WaiterPid ! State,                    % Buggy version
       fork(State);
     {set_state, NewState, WaiterPid} ->
       % WaiterPid ! {been_set, self()}, % Correct version
-      WaiterPid ! been_set,             % Bugged version
+      WaiterPid ! been_set,             % Buggy version
       fork(NewState)
   end. 

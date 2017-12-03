@@ -31,7 +31,7 @@ waiter_1(ForkDict, PhiloDict) ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
         LeftForkId = PhiloId,
         RightForkId =  1 + (LeftForkId rem 5),    % Correct version
-        % RightForkId =  1 + (5 rem LeftForkId),  % Bugged version
+        % RightForkId =  1 + (5 rem LeftForkId),  % Buggy version
         LeftPid = proplists:get_value(LeftForkId, ForkDict),
         RightPid = proplists:get_value(RightForkId, ForkDict),
         set_state(LeftPid, free),
