@@ -1,11 +1,8 @@
 -module(dining_simple).
--export([main/0, waiter/1, fork/1, philo/2]).
+-export([main/0, waiter/0, fork/1, philo/2]).
 
 main() ->
-  spawn(?MODULE, waiter, [self()]),
-  receive
-    table_prepared -> ok
-  end.
+  spawn(?MODULE, waiter, []).
 
 spawn_forks(0, Dict) ->
   Dict;
@@ -19,10 +16,9 @@ spawn_philos(N, Dict, Pid) ->
   Pair = {spawn(?MODULE, philo, [Pid, N]), N},
   spawn_philos(N-1, [Pair] ++ Dict, Pid).
 
-waiter(DiningPid) ->
+waiter() ->
   ForkDict = spawn_forks(5, []),
   PhiloDict = spawn_philos(5, [], self()),
-  DiningPid ! table_prepared,
   waiter_1(ForkDict, PhiloDict).
 
 waiter_1(ForkDict, PhiloDict) ->
