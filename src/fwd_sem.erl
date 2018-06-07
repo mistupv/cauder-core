@@ -209,7 +209,9 @@ eval_seq_1(Env,Exp) ->
         Var = utils:build_var(VarNum),
         % SubsExp = utils:substitute(Exp, Env),
         % {Env, Var, {rec, Var, cerl:receive_clauses(SubsExp)}}
-        {Env, Var, {rec, Var, cerl:receive_clauses(Exp)}}
+        ReceiveClauses = cerl:receive_clauses(Exp),
+        %%ReceiveClauses2 = replace_guards(Env,ReceiveClauses),
+        {Env, Var, {rec, Var, ReceiveClauses}}
   end.
 
 %init([_X]) -> [];
@@ -349,7 +351,12 @@ matchrec(_, [], _) ->
   no_match;
 matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs) ->
   {MsgValue, _MsgTime} = CurMsg,
-  case cerl_clauses:reduce(Clauses, [MsgValue]) of
+  %io:format("matchrec (MsgValue): ~p~n",[MsgValue]),
+  %io:format("matchrec (Clauses): ~p~n",[Clauses]),
+  %%preprocessing is used to propagate matching bindings to guards
+  NewClauses = preprocessing_clauses(Clauses,MsgValue),
+  %io:format("matchrec (NewClauses): ~p~n",[NewClauses]),
+  case cerl_clauses:reduce(NewClauses, [MsgValue]) of
     {true, {Clause, Bindings}} ->
       ClauseBody = cerl:clause_body(Clause),
       NewMsgs =  AccMsgs ++ RestMsgs,
@@ -357,6 +364,16 @@ matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs) ->
     {false, _} ->
       matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg])
   end.
+
+preprocessing_clauses(Clauses,Msg) ->
+  lists:map(fun({c_clause,L,Pats,Guard,Exp}) -> 
+    case cerl_clauses:match_list(Pats,[Msg]) of
+      {true,Bindings} -> Guard2 = utils:replace_all(Bindings,Guard),
+                         Guard3 = eval_guard(Guard2),
+                         {c_clause,L,Pats,Guard3,Exp};
+      _ -> {c_clause,L,Pats,Guard,Exp}
+    end
+  end, Clauses).
 
 %%--------------------------------------------------------------------
 %% @doc Gets the evaluation options for a given System
