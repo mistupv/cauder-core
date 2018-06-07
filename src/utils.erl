@@ -219,8 +219,10 @@ merge_env(Env, [CurBind|RestBind]) ->
 
 replace_all([],Exp) -> Exp;
 replace_all([{Var,Val}|R],Exp) -> 
-  %io:format("replace: ~p~n~p~n~p~n~p~n",[Var,Val,Exp,utils:replace(Var,Val,Exp)]),
-  replace_all(R,utils:replace(Var,Val,Exp)).
+  %io:format("replace: ~p~n~p~n~p~n",[Var,Val,Exp]),
+  NewExp = utils:replace(Var,Val,Exp),
+  %io:format("--result: p~n",[NewExp]),  
+  replace_all(R,NewExp).
 
 
 %%--------------------------------------------------------------------

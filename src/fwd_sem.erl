@@ -231,7 +231,7 @@ replace_guards(Bindings,Exps) ->
   eval_guard(Exp) ->
     case cerl:type(Exp) of
       call ->
-	      CallArgs = cerl:call_args(Exp),
+	    CallArgs = cerl:call_args(Exp),
         CallModule = cerl:call_module(Exp),
         CallName = cerl:call_name(Exp),
         ConcModule = cerl:concrete(CallModule),
@@ -294,7 +294,7 @@ eval_step(System, Pid) ->
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
-        {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Mail),
+        {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Mail, NewEnv),
         UpdatedEnv = utils:merge_env(NewEnv, Bindings),
         RepExp = utils:replace(Var, RecExp, NewExp),
         NewHist = [{rec, Env, Exp, ConsMsg, Mail}|Hist],
@@ -344,17 +344,17 @@ eval_list(Env,[Exp|Exps]) ->
       {NewEnv,[Exp|NewExp],Label}
   end.
 
-matchrec(Clauses, Mail) ->
-  matchrec(Clauses, Mail, []).
+matchrec(Clauses, Mail,Env) ->
+  matchrec(Clauses, Mail, [],Env).
 
-matchrec(_, [], _) ->
+matchrec(_, [], _, _) ->
   no_match;
-matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs) ->
+matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs, Env) ->
   {MsgValue, _MsgTime} = CurMsg,
   %io:format("matchrec (MsgValue): ~p~n",[MsgValue]),
   %io:format("matchrec (Clauses): ~p~n",[Clauses]),
   %%preprocessing is used to propagate matching bindings to guards
-  NewClauses = preprocessing_clauses(Clauses,MsgValue),
+  NewClauses = preprocessing_clauses(Clauses,MsgValue,Env),
   %io:format("matchrec (NewClauses): ~p~n",[NewClauses]),
   case cerl_clauses:reduce(NewClauses, [MsgValue]) of
     {true, {Clause, Bindings}} ->
@@ -362,13 +362,17 @@ matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs) ->
       NewMsgs =  AccMsgs ++ RestMsgs,
       {Bindings, ClauseBody, CurMsg, NewMsgs};
     {false, _} ->
-      matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg])
+      matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env)
   end.
 
-preprocessing_clauses(Clauses,Msg) ->
+preprocessing_clauses(Clauses,Msg,Env) ->
   lists:map(fun({c_clause,L,Pats,Guard,Exp}) -> 
+  	%io:format("Clauses: ~p~n",[Clauses]),
+  	%io:format("match (Pats/[Msg]) ~p~n~p~n",[Pats,[Msg]]),
+  	%io:format("--result: ~p~n",[cerl_clauses:match_list(Pats,[Msg])]),
     case cerl_clauses:match_list(Pats,[Msg]) of
-      {true,Bindings} -> Guard2 = utils:replace_all(Bindings,Guard),
+      {true,Bindings} -> Guard2 = utils:replace_all(Bindings++Env,Guard),
+      					 %io:format("calling eval_guard (Bindings/Guard/Guard2): ~n~p~n~p~n~p~n",[Bindings++Env,Guard,Guard2]),
                          Guard3 = eval_guard(Guard2),
                          {c_clause,L,Pats,Guard3,Exp};
       _ -> {c_clause,L,Pats,Guard,Exp}
@@ -500,7 +504,7 @@ eval_exp_opt(Exp, Env, Mail) ->
           %      "SUB: " ++ ?TO_STRING(SubsExp)),
           % ReceiveClauses = cerl:receive_clauses(SubsExp),
           ReceiveClauses = cerl:receive_clauses(Exp),
-          case matchrec(ReceiveClauses, Mail) of
+          case matchrec(ReceiveClauses, Mail, Env) of
             no_match ->
               ?NOT_EXP;
             _Other ->
