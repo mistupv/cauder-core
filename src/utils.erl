@@ -11,7 +11,7 @@
          select_proc_with_spawn/2, select_proc_with_rec/2,
          select_proc_with_var/2, list_from_core/1,
          update_env/2, merge_env/2,
-         replace/3, pp_system/2, pp_trace/1, pp_roll_log/1,
+         replace/3, replace_all/2, pp_system/2, pp_trace/1, pp_roll_log/1,
          moduleNames/1,
          stringToFunName/1,stringToCoreArgs/1, toCore/1, toErlang/1,
          filter_options/2, filter_procs_opts/1,
@@ -213,23 +213,53 @@ merge_env(Env, [CurBind|RestBind]) ->
   merge_env(NewEnv, RestBind).
 
 %%--------------------------------------------------------------------
+%% @doc A typical substitution application
+%% @end
+%%--------------------------------------------------------------------
+
+replace_all([],Exp) -> Exp;
+replace_all([{Var,Val}|R],Exp) -> 
+  %io:format("replace: ~p~n~p~n~p~n~p~n",[Var,Val,Exp,utils:replace(Var,Val,Exp)]),
+  replace_all(R,utils:replace(Var,Val,Exp)).
+
+
+%%--------------------------------------------------------------------
 %% @doc Replaces a variable Var by SubExp (subexpression) in SuperExp
 %% (expression)
 %% @end
 %%--------------------------------------------------------------------
 replace(Var, SubExp, SuperExp) ->
   VarName = cerl:var_name(Var),
-  cerl_trees:map(
-    fun (Exp) ->
-      case cerl:type(Exp) of
-        var ->
-          case cerl:var_name(Exp) of
-            VarName -> SubExp;
-            _Other -> Exp
-          end;
-        _Other -> Exp
-      end
-    end, SuperExp).
+  case cerl:type(SuperExp) of
+    var -> case cerl:var_name(SuperExp) of
+             VarName -> SubExp;
+             _Other -> SuperExp
+           end;
+    call -> NewArgs = lists:map(fun (E) -> replace(Var,SubExp,E) end, cerl:call_args(SuperExp)),
+            CallModule = cerl:call_module(SuperExp),
+            CallName = cerl:call_name(SuperExp),
+            cerl:c_call(CallModule,CallName,NewArgs);
+    _Other -> SuperExp
+  end.
+
+%%--------------------------------------------------------------------
+%% @doc Replaces a variable Var by SubExp (subexpression) in SuperExp
+%% (expression)
+%% @end
+%%--------------------------------------------------------------------
+%replace(Var, SubExp, SuperExp) ->
+%  VarName = cerl:var_name(Var),
+%  cerl_trees:map(
+%    fun (Exp) ->
+%      case cerl:type(Exp) of
+%        var ->
+%          case cerl:var_name(Exp) of
+%            VarName -> SubExp;
+%            _Other -> Exp
+%          end;
+%        _Other -> Exp
+%      end
+%    end, SuperExp).
 
 %%--------------------------------------------------------------------
 %% @doc Pretty-prints a given System

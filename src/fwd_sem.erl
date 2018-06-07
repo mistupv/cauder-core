@@ -75,12 +75,18 @@ eval_seq_1(Env,Exp) ->
           {NewEnv,NewExp,Label};
         false ->
           CaseClauses = cerl:case_clauses(Exp),
+          CaseClauses2 = replace_guards(Env,CaseClauses),
+          %CaseClauses3 = init(CaseClauses2),
+          %io:format("Env: ~p\n",[Env]),
+          %io:format("CaseArg: ~p\n",[CaseArg]),
+          %io:format("CaseClauses: ~p\n",[CaseClauses]),
+          %io:format("CaseClauses2: ~p\n",[CaseClauses2]),
           CaseArgs =
             case cerl:type(CaseArg) of
               values -> cerl:values_es(CaseArg);
               _ -> [CaseArg]
           end,
-          case cerl_clauses:reduce(CaseClauses,CaseArgs) of
+          case cerl_clauses:reduce(CaseClauses2,CaseArgs) of
             {true,{Clause,Bindings}} ->
               ClauseBody = cerl:clause_body(Clause),
               NewEnv = utils:merge_env(Env, Bindings),
@@ -205,6 +211,38 @@ eval_seq_1(Env,Exp) ->
         % {Env, Var, {rec, Var, cerl:receive_clauses(SubsExp)}}
         {Env, Var, {rec, Var, cerl:receive_clauses(Exp)}}
   end.
+
+%init([_X]) -> [];
+%nit([A|R]) -> [A|init(R)].
+
+replace_guards(Bindings,Exps) ->
+  lists:map(fun({c_clause,L,Pats,Guard,Exp}) -> 
+          Guard2 = utils:replace_all(Bindings,Guard),
+          Guard3 = eval_guard(Guard2),
+          {c_clause,L,Pats,Guard3,Exp}
+          %case ReducedGuard of
+          %    {value,true} -> {c_clause,L,Pats,true,Exp};
+          %    _Other -> {c_clause,L,Pats,ReducedGuard,Exp}
+          %end 
+        end, Exps).  
+
+  eval_guard(Exp) ->
+    case cerl:type(Exp) of
+      call ->
+	      CallArgs = cerl:call_args(Exp),
+        CallModule = cerl:call_module(Exp),
+        CallName = cerl:call_name(Exp),
+        ConcModule = cerl:concrete(CallModule),
+        ConcName = cerl:concrete(CallName),
+        ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
+        ConcExp = apply(ConcModule, ConcName, ConcArgs),
+        StrExp = lists:flatten(io_lib:format("~p", ([ConcExp]))) ++ ".",
+        %%io:format("ConcModule: ~p\nConcName: ~p\nConcArgs: ~p\nConcExp: ~p\nStrExp: ~p\n",[ConcModule,ConcName,ConcArgs,ConcExp,StrExp]),
+        {ok, ParsedExp, _} = erl_scan:string(StrExp),
+        {ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
+        hd([utils:toCore(Expr) || Expr <- TypedExp]);
+      _Other -> Exp
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Performs an evaluation step in process Pid, given System
