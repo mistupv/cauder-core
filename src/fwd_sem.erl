@@ -74,13 +74,13 @@ eval_seq_1(Env,Exp) ->
                                       cerl:case_clauses(Exp)),
           {NewEnv,NewExp,Label};
         false ->
-          CaseClauses = cerl:case_clauses(Exp),
-          CaseClauses2 = replace_guards(Env,CaseClauses),
-          %CaseClauses3 = init(CaseClauses2),
           %io:format("Env: ~p\n",[Env]),
           %io:format("CaseArg: ~p\n",[CaseArg]),
+          CaseClauses = cerl:case_clauses(Exp),
           %io:format("CaseClauses: ~p\n",[CaseClauses]),
+          CaseClauses2 = CaseClauses, %replace_guards(Env,CaseClauses),
           %io:format("CaseClauses2: ~p\n",[CaseClauses2]),
+          %CaseClauses3 = init(CaseClauses2),
           CaseArgs =
             case cerl:type(CaseArg) of
               values -> cerl:values_es(CaseArg);
