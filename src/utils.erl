@@ -228,38 +228,49 @@ replace_all([{Var,Val}|R],Exp) ->
 %% (expression)
 %% @end
 %%--------------------------------------------------------------------
-replace(Var, SubExp, SuperExp) ->
-  VarName = cerl:var_name(Var),
-  case cerl:type(SuperExp) of
-    var -> case cerl:var_name(SuperExp) of
-             VarName -> SubExp;
-             _Other -> SuperExp
-           end;
-    call -> NewArgs = lists:map(fun (E) -> replace(Var,SubExp,E) end, cerl:call_args(SuperExp)),
-            CallModule = cerl:call_module(SuperExp),
-            CallName = cerl:call_name(SuperExp),
-            cerl:c_call(CallModule,CallName,NewArgs);
-    _Other -> SuperExp
-  end.
+%replace(Var, SubExp, SuperExp) ->
+%  VarName = cerl:var_name(Var),
+%  case cerl:type(SuperExp) of
+%    var -> case cerl:var_name(SuperExp) of
+%             VarName -> SubExp;
+%             _Other -> SuperExp
+%           end;
+%    call -> NewArgs = lists:map(fun (E) -> replace(Var,SubExp,E) end, cerl:call_args(SuperExp)),
+%            CallModule = cerl:call_module(SuperExp),
+%            CallName = cerl:call_name(SuperExp),
+%            cerl:c_call(CallModule,CallName,NewArgs);
+%    %_Other -> SuperExp
+%    _Other -> cerl_trees:map(
+%                fun (Exp) ->
+%                  case cerl:type(Exp) of
+%                    var ->
+%                      case cerl:var_name(Exp) of
+%                          VarName -> SubExp;
+%                          _Other -> Exp
+%                      end;
+%                    _Other -> Exp
+%                  end
+%                end, SuperExp)
+%  end.
 
 %%--------------------------------------------------------------------
 %% @doc Replaces a variable Var by SubExp (subexpression) in SuperExp
 %% (expression)
 %% @end
 %%--------------------------------------------------------------------
-%replace(Var, SubExp, SuperExp) ->
-%  VarName = cerl:var_name(Var),
-%  cerl_trees:map(
-%    fun (Exp) ->
-%      case cerl:type(Exp) of
-%        var ->
-%          case cerl:var_name(Exp) of
-%            VarName -> SubExp;
-%            _Other -> Exp
-%          end;
-%        _Other -> Exp
-%      end
-%    end, SuperExp).
+replace(Var, SubExp, SuperExp) ->
+  VarName = cerl:var_name(Var),
+  cerl_trees:map(
+    fun (Exp) ->
+      case cerl:type(Exp) of
+        var ->
+          case cerl:var_name(Exp) of
+            VarName -> SubExp;
+            _Other -> Exp
+          end;
+        _Other -> Exp
+      end
+    end, SuperExp).
 
 %%--------------------------------------------------------------------
 %% @doc Pretty-prints a given System
