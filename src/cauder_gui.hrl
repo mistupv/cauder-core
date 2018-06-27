@@ -23,6 +23,7 @@
 -define(RADIO_PRIO,  110).
 -define(RADIO_REL_ENV,  111).
 -define(RADIO_FULL_ENV, 112).
+-define(REPLAY,      113).
 
 
 -define(START_BUTTON,        400).
@@ -85,6 +86,7 @@
 -define(ERROR_NUM_ARGS, "The number of arguments is not correct.").
 
 -define(HELP_OPEN_ITEM,      "Open and compile an Erlang file").
+-define(HELP_REPLAY_ITEM,    "Replay an execution from a log file").
 -define(HELP_QUIT_ITEM,      "Quit this program").
 -define(HELP_ZOOM_IN_ITEM,   "Increase text font size").
 -define(HELP_ZOOM_OUT_ITEM,  "Decrease text font size").
