@@ -471,6 +471,9 @@ loadFile(File) ->
       wxFrame:setStatusText(Frame, "Error: Could not compile file " ++ File)
   end.
 
+loadReplayData(Path) ->
+  utils:extract_replay_data(Path).
+
 openDialog(Parent) ->
   Caption = "Select an Erlang file",
   Wildcard = "Erlang source|*.erl| All files|*",
@@ -486,6 +489,20 @@ openDialog(Parent) ->
       ?wxID_OK ->
         File = wxFileDialog:getPaths(Dialog),
         loadFile(File);
+      _Other -> continue
+  end,
+  wxDialog:destroy(Dialog).
+
+openReplayDialog(Parent) ->
+  Caption = "Select a log folder",
+  DefaultPath = ref_lookup(?FILE_PATH),
+  Dialog = wxDirDialog:new(Parent, [{title, Caption},
+                                    {defaultPath, DefaultPath},
+                                    {style, ?wxDD_DIR_MUST_EXIST}]),
+  case wxDialog:showModal(Dialog) of
+      ?wxID_OK ->
+        Path = wxDirDialog:getPath(Dialog),
+        loadReplayData(Path);
       _Other -> continue
   end,
   wxDialog:destroy(Dialog).
