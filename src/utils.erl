@@ -17,7 +17,8 @@
          filter_options/2, filter_procs_opts/1,
          has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
-         gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1]).
+         gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
+         extract_replay_data/1]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -616,6 +617,43 @@ must_focus_log(System) ->
       [] -> false;
       _  -> true
   end.
+
+parse_replay_info(Line) ->
+  Words = string:split(Line, " "),
+  case hd(Words) of
+    "call" ->
+      {call, lists:nth(2, Words)};
+    "main_pid" ->
+      {pid, lists:nth(2, Words)};
+    _ ->
+      none
+  end.
+
+add_replay_info({pid, Pid}, Data) ->
+  Data#replay{main_pid = Pid};
+add_replay_info({call, Call}, Data) ->
+  Data#replay{call = Call};
+add_replay_info(_, Data) ->
+  Data.
+
+read_replay_data(File, Data) ->
+  case file:read_line(File) of
+    eof ->
+      Data;
+    {ok, Line} ->
+      ReplayInfo = parse_replay_info(Line),
+      NData = add_replay_info(ReplayInfo, Data),
+      read_replay_data(File, NData)
+  end.
+
+extract_replay_data(Path) ->
+  ReplayData = #replay{log_path = Path},
+  ResPath = Path ++ "/trace_result.log",
+  {ok, FileHandler} = file:open(ResPath, [read]),
+  NReplayData = read_replay_data(FileHandler, ReplayData),
+  put(replay_data, NReplayData),
+  io:format("~p~n", [NReplayData]),
+  file:close(FileHandler).
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
