@@ -387,7 +387,7 @@ setupMenu() ->
   wxMenuBar:append(MenuBar, Sched, "&Scheduler"),
   wxMenuBar:append(MenuBar, Help, "&Help"),
   OpenItem = wxMenu:append(File, ?OPEN,     "Open\tCtrl-O"),
-  ReplayItem = wxMenu:append(File, ?REPLAY, "Replay"),
+  ReplayItem = wxMenu:append(File, ?REPLAY, "Replay\tCtrl-R"),
   QuitItem = wxMenu:append(File, ?EXIT,     "Quit\tCtrl-Q"),
   ZoomInItem = wxMenu:append(View, ?ZOOM_IN,  "Zoom In\tCtrl-+"),
   ZoomOutItem = wxMenu:append(View, ?ZOOM_OUT, "Zoom Out\tCtrl--"),
@@ -826,7 +826,7 @@ loop() ->
           loop();
         #wx{id = ?REPLAY, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),
-          % openReplayDialog(Frame),
+          openReplayDialog(Frame),
           loop();
         #wx{id = ?ZOOM_IN, event = #wxCommand{type = command_menu_selected}} ->
           zoomIn(),

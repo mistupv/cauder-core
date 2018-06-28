@@ -28,7 +28,8 @@
 -define(APP_REF, '_._app').
 -define(GUI_REF, '_._gui').
 
--define(FILE_PATH,  200).
+-define(FILE_PATH,   200).
+-define(REPLAY_DATA, 201).
 
 -define(FUN_DEFS,   300).
 -define(FRESH_PID,  301).
@@ -82,3 +83,9 @@
                 to,
                 val,
                 time}).
+
+-record(replay, {call,
+                 main_pid,
+                 log_path,
+                 dict = []}).
+
