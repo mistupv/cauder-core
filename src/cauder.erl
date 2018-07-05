@@ -10,7 +10,7 @@
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
          eval_roll/3, eval_roll_send/2, eval_roll_spawn/2,
-         eval_roll_rec/2, eval_roll_var/2]).
+         eval_roll_rec/2, eval_roll_var/2, eval_replay/0]).
 
 -include("cauder.hrl").
 
@@ -166,6 +166,9 @@ eval_roll_var(System, Id) ->
       FocusLog = utils:must_focus_log(RolledSystem),
       {true, FocusLog, RolledSystem}
   end.
+
+eval_replay() ->
+  ok.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
