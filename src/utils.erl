@@ -18,7 +18,7 @@
          has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
-         extract_replay_data/1]).
+         extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -632,7 +632,9 @@ parse_replay_info(Line) ->
 add_replay_info({pid, Pid}, Data) ->
   Data#replay{main_pid = Pid};
 add_replay_info({call, Call}, Data) ->
-  Data#replay{call = Call};
+  NCall = lists:flatten(string:replace(Call, "\n", "")),
+  ECall = lists:flatten(string:replace(NCall, "\"", "", all)),
+  Data#replay{call = ECall};
 add_replay_info(_, Data) ->
   Data.
 
@@ -652,8 +654,52 @@ extract_replay_data(Path) ->
   {ok, FileHandler} = file:open(ResPath, [read]),
   NReplayData = read_replay_data(FileHandler, ReplayData),
   put(replay_data, NReplayData),
-  io:format("~p~n", [NReplayData]),
+  % io:format("~p~n", [NReplayData]),
   file:close(FileHandler).
+
+parse_proc_data(Line) ->
+  Line.
+
+read_replay_proc_data(File, Data) ->
+  case file:read_line(File) of
+    eof ->
+      lists:reverse(Data);
+    {ok, Line} ->
+      ProcData = parse_proc_data(Line),
+      NData = [ProcData | Data],
+      read_replay_proc_data(File, NData)
+  end.
+
+extract_pid_log_data(Path, Pid) ->
+  PidPath = Path ++ "/trace_" ++ Pid ++ ".log",
+  {ok, FileHandler} = file:open(PidPath, [read]),
+  ReplayProcData = read_replay_proc_data(FileHandler, []),
+  file:close(FileHandler),
+  ReplayProcData.
+
+get_mod_name(Call) ->
+    AExpr = 
+        case is_list(Call) of 
+            true ->
+                hd(parse_expr(Call++"."));
+            false ->
+                Call
+        end,
+    {call,_,{remote,_,{atom,_,ModName},{atom,_,FunName}},Args} = AExpr,
+    {ModName,FunName,Args}.
+
+parse_expr(Func) ->
+    case erl_scan:string(Func) of
+        {ok, Toks, _} ->
+            case erl_parse:parse_exprs(Toks) of
+                {ok, _Term} ->
+                    _Term;
+                _Err ->
+                    {error, parse_error}
+            end;
+        _Err ->
+            {error, parse_error}
+    end.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).
