@@ -658,7 +658,9 @@ extract_replay_data(Path) ->
   file:close(FileHandler).
 
 parse_proc_data(Line) ->
-  Line.
+  NLine0 = lists:flatten(string:replace(Line, "\n", "")),
+  % NLine1 = lists:flatten(string:replace(NLine0, "{}", "")),
+  NLine0.
 
 read_replay_proc_data(File, Data) ->
   case file:read_line(File) of
