@@ -472,7 +472,13 @@ loadFile(File) ->
   end.
 
 loadReplayData(Path) ->
-  utils:extract_replay_data(Path).
+  utils:extract_replay_data(Path),
+  ReplayData = get(replay_data),
+  {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
+  MainPid = ReplayData#replay.main_pid,
+  MainLog = utils:extract_pid_log_data(Path, MainPid),  
+  start(cerl:c_var({Fun,length(Args)}), Args, MainPid, MainLog),
+  cauder:eval_replay().
 
 openDialog(Parent) ->
   Caption = "Select an Erlang file",
@@ -529,8 +535,9 @@ zoomOut() ->
   wxTextCtrl:setFont(CodeText, NewFont),
   wxTextCtrl:setFont(StateText, NewFont).
 
-init_system(Fun, Args) ->
-  Proc = #proc{pid = cerl:c_int(1),
+init_system(Fun, Args, Pid, Log) ->
+  Proc = #proc{pid = cerl:c_int(Pid),
+               log = Log,
                exp = cerl:c_apply(Fun, Args),
                spf = cerl:var_name(Fun)},
   Procs = [Proc],
@@ -542,11 +549,14 @@ init_system(Fun, Args) ->
   ref_add(?STATUS, NewStatus).
 
 start(Fun,Args) ->
+  start(Fun, Args, 1, []).
+
+start(Fun,Args, Pid, Log) ->
   Status = ref_lookup(?STATUS),
   #status{loaded = {true, FunDefs}} = Status,
   utils_gui:stop_refs(),
   cauder:start_refs(FunDefs),
-  init_system(Fun, Args),
+  init_system(Fun, Args, Pid, Log),
   refresh(true),
   LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
   wxNotebook:setSelection(LeftNotebook, ?PAGEPOS_STATE),
