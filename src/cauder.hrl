@@ -58,6 +58,7 @@
 
 -record(proc, {pid,
                hist = [],
+               log  = [],
                env  = [],
                exp,
                mail = [],
@@ -86,6 +87,5 @@
 
 -record(replay, {call,
                  main_pid,
-                 log_path,
-                 dict = []}).
+                 log_path}).
 
