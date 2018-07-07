@@ -18,7 +18,8 @@
          has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
-         extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1]).
+         extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1,
+         log_token_val/1]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -630,7 +631,8 @@ parse_replay_info(Line) ->
   end.
 
 add_replay_info({pid, Pid}, Data) ->
-  Data#replay{main_pid = Pid};
+  NPid = lists:delete($\n, Pid),
+  Data#replay{main_pid = NPid};
 add_replay_info({call, Call}, Data) ->
   NCall = lists:flatten(string:replace(Call, "\n", "")),
   ECall = lists:flatten(string:replace(NCall, "\"", "", all)),
@@ -658,9 +660,20 @@ extract_replay_data(Path) ->
   file:close(FileHandler).
 
 parse_proc_data(Line) ->
-  NLine0 = lists:flatten(string:replace(Line, "\n", "")),
-  % NLine1 = lists:flatten(string:replace(NLine0, "{}", "")),
-  NLine0.
+  NLine0   = lists:delete(${, Line),
+  NLine1   = lists:delete($}, NLine0),
+  NLine2   = lists:delete($\n, NLine1),
+  Tokens   = string:split(NLine2, ",", all),
+  ActToken = lists:nth(2, Tokens),
+  IdToken = lists:nth(3, Tokens),
+  ActVal = log_token_val(ActToken),
+  IdVal = log_token_val(IdToken),
+  {ActVal, IdVal}.
+
+log_token_val(Token) ->
+    PToken  = parse_expr(Token ++ "."),
+    [{_, _, TokenVal}]  = PToken,
+    TokenVal.
 
 read_replay_proc_data(File, Data) ->
   case file:read_line(File) of

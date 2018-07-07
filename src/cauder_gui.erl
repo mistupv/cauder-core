@@ -476,8 +476,9 @@ loadReplayData(Path) ->
   ReplayData = get(replay_data),
   {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
   MainPid = ReplayData#replay.main_pid,
-  MainLog = utils:extract_pid_log_data(Path, MainPid),  
-  start(cerl:c_var({Fun,length(Args)}), Args, MainPid, MainLog),
+  MainLog = utils:extract_pid_log_data(Path, MainPid),
+  SMainPid = utils:log_token_val(MainPid),
+  start(cerl:c_var({Fun,length(Args)}), Args, SMainPid, MainLog),
   cauder:eval_replay().
 
 openDialog(Parent) ->
