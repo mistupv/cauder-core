@@ -28,10 +28,8 @@
 
 -define(START_BUTTON,        400).
 
--define(FORW_INT_BUTTON,     410).
--define(FORW_SCH_BUTTON,     411).
+-define(FORW_INT_BUTTON,     411).
 -define(BACK_INT_BUTTON,     412).
--define(BACK_SCH_BUTTON,     413).
 
 -define(FORWARD_BUTTON,    422).
 -define(BACKWARD_BUTTON,   423).
@@ -58,7 +56,6 @@
 -define(ROLL_STEP_TEXT, 516).
 -define(STATUS_BAR,     520).
 -define(INPUT_SIZER,    530).
--define(FUN_CHOICE,     531).
 -define(LEFT_NOTEBOOK,  540).
 -define(RIGHT_NOTEBOOK, 541).
 -define(RBOT_NOTEBOOK,  542).
@@ -99,5 +96,3 @@
 -define(HELP_RADIO_REN_ENV,  "Show relevant bindings from environment").
 -define(HELP_RADIO_FULL_ENV, "Show all bindings from environment").
 -define(HELP_TOGGLE_COMP,    "Allow compiler optimizations when loading files").
--define(HELP_RADIO_RAND,     "Set scheduler to random choice among options").
--define(HELP_RADIO_PRIO,     "Set scheduler to random choice among options (priority to process options)").

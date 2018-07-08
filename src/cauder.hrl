@@ -32,8 +32,8 @@
 -define(REPLAY_DATA, 201).
 
 -define(FUN_DEFS,   300).
--define(FRESH_PID,  301).
--define(FRESH_TIME, 302).
+% -define(FRESH_PID,  301).
+% -define(FRESH_TIME, 302).
 -define(FRESH_VAR,  303).
 
 -define(MULT_FWD, mult_fwd).
@@ -57,19 +57,17 @@
 -define(CAUDER_GREEN, {34,139,34}).
 
 -record(proc, {pid,
-               hist = [],
                log  = [],
+               hist = [],
                env  = [],
                exp,
-               mail = [],
                spf  = undef}).
 
 -record(msg, {dest,
               val,
               time}).
 
--record(sys, {sched = ?SCHED_PRIO_RANDOM,
-              msgs  = [],
+-record(sys, {msgs  = [],
               procs = [],
               trace = [],
               roll  = []}).

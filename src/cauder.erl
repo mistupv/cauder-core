@@ -30,8 +30,6 @@ start_refs(FunDefs) ->
   ?LOG("starting refs"),
   ref_start(),
   ref_add(?FUN_DEFS,   FunDefs),
-  ref_add(?FRESH_PID,  2),
-  ref_add(?FRESH_TIME, 1),
   ref_add(?FRESH_VAR,  1).
 
 %%--------------------------------------------------------------------

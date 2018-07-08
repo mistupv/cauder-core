@@ -62,18 +62,18 @@ setupCodePanel(Parent) ->
   ref_add(?CODE_TEXT,CodeText),
 
 
-  FundefStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Funs: "),
-  FunChoice = wxChoice:new(CodePanel, ?wxID_ANY),
-  ref_add(?FUN_CHOICE,FunChoice),
-  InputStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Input args: "),
-  InputTextCtrl = wxTextCtrl:new(CodePanel, ?INPUT_TEXT,
-                                 [{style, ?wxBOTTOM},
-                                  {value, ""}]),
-  ref_add(?INPUT_TEXT,InputTextCtrl),
-  StartButton = wxButton:new(CodePanel, ?START_BUTTON,
-                             [{label, "START"}]),
-  ref_add(?START_BUTTON,StartButton),
-  wxButton:disable(StartButton),
+  % FundefStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Funs: "),
+  % FunChoice = wxChoice:new(CodePanel, ?wxID_ANY),
+  % ref_add(?FUN_CHOICE,FunChoice),
+  % InputStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Input args: "),
+  % InputTextCtrl = wxTextCtrl:new(CodePanel, ?INPUT_TEXT,
+  %                                [{style, ?wxBOTTOM},
+  %                                 {value, ""}]),
+  % ref_add(?INPUT_TEXT,InputTextCtrl),
+  % StartButton = wxButton:new(CodePanel, ?START_BUTTON,
+  %                            [{label, "START"}]),
+  % ref_add(?START_BUTTON,StartButton),
+  % wxButton:disable(StartButton),
 
   CodeSizer = wxBoxSizer:new(?wxVERTICAL),
   InputSizer = wxBoxSizer:new(?wxHORIZONTAL),
@@ -85,13 +85,13 @@ setupCodePanel(Parent) ->
   wxSizer:addSpacer(CodeSizer, 10),
   wxSizer:add(CodeSizer, InputSizer, [{proportion, 0}, {flag, ?wxEXPAND}]),
 
-  wxSizer:add(InputSizer, FundefStaticText),
-  wxSizer:add(InputSizer, FunChoice),
-  wxSizer:addSpacer(InputSizer, 10),
-  wxSizer:add(InputSizer, InputStaticText),
-  wxSizer:add(InputSizer, InputTextCtrl, SizerFlags),
-  wxSizer:addSpacer(InputSizer, 10),
-  wxSizer:add(InputSizer, StartButton, [{flag, ?wxALIGN_RIGHT}]),
+  % wxSizer:add(InputSizer, FundefStaticText),
+  % wxSizer:add(InputSizer, FunChoice),
+  % wxSizer:addSpacer(InputSizer, 10),
+  % wxSizer:add(InputSizer, InputStaticText),
+  % wxSizer:add(InputSizer, InputTextCtrl, SizerFlags),
+  % wxSizer:addSpacer(InputSizer, 10),
+  % wxSizer:add(InputSizer, StartButton, [{flag, ?wxALIGN_RIGHT}]),
 
   wxSizer:add(BorderSizer, CodeSizer, [{flag, ?wxALL bor ?wxEXPAND},
                                        {proportion, 1}, {border, 10}]),
@@ -165,26 +165,26 @@ setupRightSizer(Parent) ->
 
 setupManualPanel(Parent) ->
   ManuPanel = wxPanel:new(Parent),
-  PidStaticText = wxStaticText:new(ManuPanel, ?wxID_ANY, "Pid/MsgId:"),
+  PidStaticText = wxStaticText:new(ManuPanel, ?wxID_ANY, "Pid"),
   PidTextCtrl = wxTextCtrl:new(ManuPanel, ?PID_TEXT, [{style, ?wxBOTTOM}]),
   ref_add(?PID_TEXT, PidTextCtrl),
 
   ForwIntButton = wxButton:new(ManuPanel, ?FORW_INT_BUTTON,
                                [{label, "Seq"}]),
-  ForwSchButton = wxButton:new(ManuPanel, ?FORW_SCH_BUTTON,
-                                [{label, "Sched"}]),
+  % ForwSchButton = wxButton:new(ManuPanel, ?FORW_SCH_BUTTON,
+  %                               [{label, "Sched"}]),
   BackIntButton = wxButton:new(ManuPanel, ?BACK_INT_BUTTON,
                                [{label, "Seq"}]),
-  BackSchButton = wxButton:new(ManuPanel, ?BACK_SCH_BUTTON,
-                                [{label, "Sched"}]),
+  % BackSchButton = wxButton:new(ManuPanel, ?BACK_SCH_BUTTON,
+  %                               [{label, "Sched"}]),
   wxButton:disable(ForwIntButton),
-  wxButton:disable(ForwSchButton),
+  % wxButton:disable(ForwSchButton),
   wxButton:disable(BackIntButton),
-  wxButton:disable(BackSchButton),
+  % wxButton:disable(BackSchButton),
   ref_add(?FORW_INT_BUTTON, ForwIntButton),
-  ref_add(?FORW_SCH_BUTTON, ForwSchButton),
+  % ref_add(?FORW_SCH_BUTTON, ForwSchButton),
   ref_add(?BACK_INT_BUTTON, BackIntButton),
-  ref_add(?BACK_SCH_BUTTON, BackSchButton),
+  % ref_add(?BACK_SCH_BUTTON, BackSchButton),
 
   ManuSizer = wxBoxSizer:new(?wxVERTICAL),
   ProcSizer = wxBoxSizer:new(?wxHORIZONTAL),
@@ -203,11 +203,11 @@ setupManualPanel(Parent) ->
   wxSizer:add(ProcSizer, PidTextCtrl, [{flag, ?wxCENTRE}]),
   
   wxSizer:add(ForwardSizer, ForwIntButton),
-  wxSizer:addSpacer(ForwardSizer, 5),
-  wxSizer:add(ForwardSizer, ForwSchButton),
+  % wxSizer:addSpacer(ForwardSizer, 5),
+  % wxSizer:add(ForwardSizer, ForwSchButton),
   wxSizer:add(BackwardSizer, BackIntButton),
-  wxSizer:addSpacer(BackwardSizer, 5),
-  wxSizer:add(BackwardSizer, BackSchButton),
+  % wxSizer:addSpacer(BackwardSizer, 5),
+  % wxSizer:add(BackwardSizer, BackSchButton),
 
   wxSizer:add(ButtonSizer, ForwardSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
   wxSizer:addSpacer(ButtonSizer, 5),
@@ -384,7 +384,6 @@ setupMenu() ->
   wxMenuBar:append(MenuBar, File, "&File"),
   wxMenuBar:append(MenuBar, View, "&View"),
   wxMenuBar:append(MenuBar, Compile, "&Compiler"),
-  wxMenuBar:append(MenuBar, Sched, "&Scheduler"),
   wxMenuBar:append(MenuBar, Help, "&Help"),
   OpenItem = wxMenu:append(File, ?OPEN,     "Open\tCtrl-O"),
   ReplayItem = wxMenu:append(File, ?REPLAY, "Replay\tCtrl-R"),
@@ -411,9 +410,6 @@ setupMenu() ->
   wxMenuItem:check(RadioRelEnv),
   ToggleComp  = wxMenu:appendCheckItem(Compile, ?TOGGLE_COMP,  "Compiler Optimizations"),
   wxMenuItem:check(ToggleComp),
-  RadioRand = wxMenu:appendRadioItem(Sched, ?RADIO_RAND, "Random"),
-  RadioPrio = wxMenu:appendRadioItem(Sched, ?RADIO_PRIO, "Random (Prio. Proc.)"),
-  wxMenuItem:check(RadioPrio),
   wxMenu:append(Help, ?ABOUT, "About"),
   wxMenuItem:setHelp(OpenItem,     ?HELP_OPEN_ITEM),
   wxMenuItem:setHelp(ReplayItem,   ?HELP_REPLAY_ITEM),
@@ -429,8 +425,6 @@ setupMenu() ->
   wxMenuItem:setHelp(RadioRelEnv,  ?HELP_RADIO_REN_ENV),
   wxMenuItem:setHelp(RadioFullEnv, ?HELP_RADIO_FULL_ENV),
   wxMenuItem:setHelp(ToggleComp,   ?HELP_TOGGLE_COMP),
-  wxMenuItem:setHelp(RadioRand,    ?HELP_RADIO_RAND),
-  wxMenuItem:setHelp(RadioPrio,    ?HELP_RADIO_PRIO),
   Frame = ref_lookup(?FRAME),
   wxFrame:setMenuBar(Frame, MenuBar).
 
@@ -459,13 +453,13 @@ loadFile(File) ->
       ref_add(?STATUS, Status#status{loaded = {true, FunDefs}}),
       LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
       wxNotebook:setSelection(LeftNotebook, ?PAGEPOS_CODE),
-      utils_gui:set_choices(utils:moduleNames(CleanCoreForms)),
+      % utils_gui:set_choices(utils:moduleNames(CleanCoreForms)),
       utils_gui:disable_all_buttons(),
       utils_gui:clear_texts(),
-      InputSizer = ref_lookup(?INPUT_SIZER),
-      wxSizer:layout(InputSizer),
-      StartButton = ref_lookup(?START_BUTTON),
-      wxButton:enable(StartButton),
+      % InputSizer = ref_lookup(?INPUT_SIZER),
+      % wxSizer:layout(InputSizer),
+      % StartButton = ref_lookup(?START_BUTTON),
+      % wxButton:enable(StartButton),
       wxFrame:setStatusText(Frame, "Loaded file " ++ File);
     _Other ->
       wxFrame:setStatusText(Frame, "Error: Could not compile file " ++ File)
@@ -542,8 +536,7 @@ init_system(Fun, Args, Pid, Log) ->
                exp = cerl:c_apply(Fun, Args),
                spf = cerl:var_name(Fun)},
   Procs = [Proc],
-  Sched = utils_gui:sched_opt(),
-  System = #sys{sched = Sched, procs = Procs},
+  System = #sys{procs = Procs},
   ref_add(?SYSTEM, System),
   Status = ref_lookup(?STATUS),
   NewStatus = Status#status{running = true},
@@ -570,7 +563,7 @@ start(Fun,Args, Pid, Log) ->
 refresh_buttons(Options) ->
   PidTextCtrl = ref_lookup(?PID_TEXT),
   PidText = wxTextCtrl:getValue(PidTextCtrl),
-  ManualButtons = lists:seq(?FORW_INT_BUTTON, ?BACK_SCH_BUTTON),
+  ManualButtons = lists:seq(?FORW_INT_BUTTON, ?BACK_INT_BUTTON),
   ?LOG("full options: " ++ ?TO_STRING(utils_gui:sort_opts(Options))),
   case string:to_integer(PidText) of
     {error, _} ->
@@ -608,24 +601,6 @@ refresh(RefState) ->
       end,
       refresh_buttons(Options),
       utils_gui:enable_perm_buttons()
-  end.
-
-start() ->
-  InputTextCtrl = ref_lookup(?INPUT_TEXT),
-  InputText = wxTextCtrl:getValue(InputTextCtrl),
-  FunChoice = ref_lookup(?FUN_CHOICE),
-  NumChoice = wxChoice:getSelection(FunChoice),
-  StringChoice = wxChoice:getString(FunChoice, NumChoice),
-  Fun = utils:stringToFunName(StringChoice),
-  Args = utils:stringToCoreArgs(InputText),
-  {_, FunArity} = cerl:var_name(Fun),
-  case FunArity == length(Args) of
-    true ->
-      start(Fun, Args),
-      ?LOG("start fun " ++ StringChoice ++ " with args " ++ InputText);
-    false ->
-      utils_gui:update_status_text(?ERROR_NUM_ARGS),
-      error
   end.
 
 exec_with(Button) ->
@@ -747,18 +722,6 @@ eval_roll_var() ->
       {CanRoll, VarName, FocusLog}
   end.
 
-set_sched() ->
-  Status = ref_lookup(?STATUS),
-  Running = Status#status.running,
-  Sched   = utils_gui:sched_opt(),
-  case Running of
-    true ->
-      System = ref_lookup(?SYSTEM),
-      NewSystem = System#sys{sched = Sched},
-      ref_add(?SYSTEM, NewSystem);
-    false -> ok
-  end.
-
 focus_roll_log(false) -> ok;
 focus_roll_log(true) ->
   RBotNotebook = ref_lookup(?RBOT_NOTEBOOK),
@@ -767,9 +730,6 @@ focus_roll_log(true) ->
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
-        #wx{id = ?START_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          start(),
-          loop();
         #wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           StepsDone = eval_norm(),
@@ -784,7 +744,7 @@ loop() ->
           refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
-          when (RuleButton >= ?FORW_INT_BUTTON) and (RuleButton =< ?BACK_SCH_BUTTON) ->
+          when (RuleButton >= ?FORW_INT_BUTTON) and (RuleButton =< ?BACK_INT_BUTTON) ->
           utils_gui:disable_all_buttons(),
           exec_with(RuleButton),
           utils_gui:sttext_single(RuleButton),
@@ -888,12 +848,6 @@ loop() ->
           loop();
         #wx{id = ?TOGGLE_COMP, event = #wxCommand{type = command_menu_selected}} ->
           utils_gui:sttext_comp(),
-          loop();
-        #wx{id = ?RADIO_RAND, event = #wxCommand{type = command_menu_selected}} ->
-          set_sched(),
-          loop();
-        #wx{id = ?RADIO_PRIO, event = #wxCommand{type = command_menu_selected}} ->
-          set_sched(),
           loop();
         #wx{id = ?EXIT, event = #wxCommand{type = command_menu_selected}} ->
           Frame = ref_lookup(?FRAME),

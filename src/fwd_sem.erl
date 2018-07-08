@@ -6,8 +6,7 @@
 %%%-------------------------------------------------------------------
 
 -module(fwd_sem).
--export([eval_step/2, eval_sched/2,
-         eval_opts/1, eval_procs_opts/1, eval_sched_opts/1]).
+-export([eval_step/2, eval_opts/1]).
 
 -include("cauder.hrl").
 
@@ -255,7 +254,7 @@ eval_step(System, Pid) ->
   Procs = System#sys.procs,
   Trace = System#sys.trace,
   {Proc, RestProcs} = utils:select_proc(Procs, Pid),
-  #proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail} = Proc,
+  #proc{pid = Pid, log = Log, hist = Hist, env = Env, exp = Exp} = Proc,
   {NewEnv, NewExp, Label} = eval_seq(Env, Exp),
   NewSystem = 
     case Label of
@@ -268,37 +267,45 @@ eval_step(System, Pid) ->
         NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = RepExp},
         System#sys{msgs = Msgs, procs = [NewProc|RestProcs]};
       {send, DestPid, MsgValue} ->
-        Time = ref_lookup(?FRESH_TIME),
-        ref_add(?FRESH_TIME, Time + 1),
+        % Time = ref_lookup(?FRESH_TIME),
+        % ref_add(?FRESH_TIME, Time + 1),
+        {send, Time} = hd(Log),
         NewMsg = #msg{dest = DestPid, val = MsgValue, time = Time},
         NewMsgs = [NewMsg|Msgs],
+        NewLog = tl(Log),
         NewHist = [{send, Env, Exp, DestPid, {MsgValue, Time}}|Hist],
-        NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = NewExp},
+        NewProc = Proc#proc{log = NewLog, hist = NewHist, env = NewEnv, exp = NewExp},
         TraceItem = #trace{type = ?RULE_SEND, from = Pid, to = DestPid, val = MsgValue, time = Time},
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs], trace = NewTrace};
       {spawn, {Var, FunName, FunArgs}} ->
-        PidNum = ref_lookup(?FRESH_PID),
-        ref_add(?FRESH_PID, PidNum + 1),
+        % PidNum = ref_lookup(?FRESH_PID),
+        % ref_add(?FRESH_PID, PidNum + 1),
+        {spawn, PidNum} = hd(Log),
         SpawnPid = cerl:c_int(PidNum),
         ArgsLen = length(FunArgs),
         FunCall = cerl:c_var({cerl:concrete(FunName), ArgsLen}),
+        ReplayData = get(replay_data),
+        Path = ReplayData#replay.log_path,
+        PidText = integer_to_list(PidNum),
         SpawnProc = #proc{pid = SpawnPid,
+                          log = utils:extract_pid_log_data(Path, PidText),
                           env = [],
                           exp = cerl:c_apply(FunCall,FunArgs),
                           spf = cerl:var_name(FunCall)},
+        NewLog = tl(Log),
         NewHist = [{spawn, Env, Exp, SpawnPid}|Hist],
         RepExp = utils:replace(Var, SpawnPid, NewExp),
-        NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = RepExp},
+        NewProc = Proc#proc{hist = NewHist, log = NewLog, env = NewEnv, exp = RepExp},
         TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
-        {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Mail, NewEnv),
+        {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Msgs, NewEnv),
         UpdatedEnv = utils:merge_env(NewEnv, Bindings),
         RepExp = utils:replace(Var, RecExp, NewExp),
-        NewHist = [{rec, Env, Exp, ConsMsg, Mail}|Hist],
-        NewProc = Proc#proc{hist = NewHist, env = UpdatedEnv, exp = RepExp, mail = NewMail},
+        NewHist = [{rec, Env, Exp, ConsMsg}|Hist],
+        NewProc = Proc#proc{hist = NewHist, env = UpdatedEnv, exp = RepExp},
         {MsgValue, Time} = ConsMsg, 
         TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
         NewTrace = [TraceItem|Trace],
@@ -310,16 +317,16 @@ eval_step(System, Pid) ->
 %% @doc Performs an evaluation step in message Id, given System
 %% @end
 %%--------------------------------------------------------------------
-eval_sched(System, Id) ->
-  Procs = System#sys.procs,
-  Msgs = System#sys.msgs,
-  {Msg, RestMsgs} = utils:select_msg(Msgs, Id),
-  #msg{dest = DestPid, val = Value, time = Id} = Msg,
-  {Proc, RestProcs} = utils:select_proc(Procs, DestPid),
-  Mail = Proc#proc.mail,
-  NewMail = Mail ++ [{Value, Id}],
-  NewProc = Proc#proc{mail = NewMail},
-  System#sys{msgs = RestMsgs, procs = [NewProc|RestProcs]}.
+% eval_sched(System, Id) ->
+%   Procs = System#sys.procs,
+%   Msgs = System#sys.msgs,
+%   {Msg, RestMsgs} = utils:select_msg(Msgs, Id),
+%   #msg{dest = DestPid, val = Value, time = Id} = Msg,
+%   {Proc, RestProcs} = utils:select_proc(Procs, DestPid),
+%   Mail = Proc#proc.mail,
+%   NewMail = Mail ++ [{Value, Id}],
+%   NewProc = Proc#proc{mail = NewMail},
+%   System#sys{msgs = RestMsgs, procs = [NewProc|RestProcs]}.
 
 is_exp([]) -> false;
 is_exp(Exp) when is_list(Exp) ->
@@ -384,22 +391,23 @@ preprocessing_clauses(Clauses,Msg,Env) ->
 %% @end
 %%--------------------------------------------------------------------
 eval_opts(System) ->
-  SchedOpts = eval_sched_opts(System),
+  % SchedOpts = eval_sched_opts(System),
   ProcsOpts = eval_procs_opts(System),
-  SchedOpts ++ ProcsOpts.
+  % SchedOpts ++ ProcsOpts.
+  ProcsOpts.
 
-eval_sched_opts(#sys{msgs = []}) ->
-  [];
-eval_sched_opts(#sys{msgs = [CurMsg|RestMsgs], procs = Procs}) ->
-  DestPid = CurMsg#msg.dest,
-  DestProcs = [ P || P <- Procs, P#proc.pid == DestPid],
-  case DestProcs of
-    [] ->
-      eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs});
-    _Other ->
-      Time = CurMsg#msg.time,
-      [#opt{sem = ?MODULE, type = ?TYPE_MSG, id = Time, rule = ?RULE_SCHED}|eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs})]
-  end.
+% eval_sched_opts(#sys{msgs = []}) ->
+%   [];
+% eval_sched_opts(#sys{msgs = [CurMsg|RestMsgs], procs = Procs}) ->
+%   DestPid = CurMsg#msg.dest,
+%   DestProcs = [ P || P <- Procs, P#proc.pid == DestPid],
+%   case DestProcs of
+%     [] ->
+%       eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs});
+%     _Other ->
+%       Time = CurMsg#msg.time,
+%       [#opt{sem = ?MODULE, type = ?TYPE_MSG, id = Time, rule = ?RULE_SCHED}|eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs})]
+%   end.
 
 eval_procs_opts(#sys{procs = []}) ->
   [];
@@ -407,8 +415,9 @@ eval_procs_opts(#sys{procs = [CurProc|RestProcs]}) ->
   Exp = CurProc#proc.exp,
   Env = CurProc#proc.env,
   Pid = CurProc#proc.pid,
-  Mail = CurProc#proc.mail,
-  case eval_exp_opt(Exp, Env, Mail) of
+  % Mail = CurProc#proc.mail,
+  % case eval_exp_opt(Exp, Env, Mail) of
+    case eval_exp_opt(Exp, Env, []) of
     ?NOT_EXP ->
       eval_procs_opts(#sys{procs = RestProcs});
     Opt ->
@@ -499,10 +508,6 @@ eval_exp_opt(Exp, Env, Mail) ->
               end
           end;
         'receive' ->
-          % SubsExp = utils:substitute(Exp, Env),
-          % ?LOG("Exp: " ++ ?TO_STRING(Exp) ++ "\n" ++
-          %      "SUB: " ++ ?TO_STRING(SubsExp)),
-          % ReceiveClauses = cerl:receive_clauses(SubsExp),
           ReceiveClauses = cerl:receive_clauses(Exp),
           case matchrec(ReceiveClauses, Mail, Env) of
             no_match ->

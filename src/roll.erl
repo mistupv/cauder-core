@@ -17,9 +17,10 @@ can_roll(#sys{procs = Procs}, Pid) ->
     true ->
       {Proc, _} = utils:select_proc(Procs, Pid),
       Hist = Proc#proc.hist,
-      Mail = Proc#proc.mail,
-      case {Hist, Mail} of
-        {[], []} -> false;
+      % Mail = Proc#proc.mail,
+      % case {Hist, Mail} of
+      case Hist of
+        [] -> false;
         _ -> true
       end
   end.

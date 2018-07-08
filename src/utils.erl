@@ -6,8 +6,7 @@
 -module(utils).
 -export([fundef_lookup/2, fundef_rename/1, substitute/2,
          build_var/1, build_var/2, pid_exists/2,
-         select_proc/2, select_msg/2,
-         select_proc_with_time/2, select_proc_with_send/2,
+         select_proc/2, select_msg/2, select_proc_with_send/2,
          select_proc_with_spawn/2, select_proc_with_rec/2,
          select_proc_with_var/2, list_from_core/1,
          update_env/2, merge_env/2,
@@ -19,7 +18,7 @@
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
          extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1,
-         log_token_val/1]).
+         log_token_val/1, add_msg/4]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -127,13 +126,13 @@ select_msg(Msgs, Time) ->
 %% from Procs
 %% @end
 %%--------------------------------------------------------------------
-select_proc_with_time(Procs, Time) ->
-  ProcWithTime =
-    lists:filter( fun (Proc) ->
-                    Mail = Proc#proc.mail,
-                    length([ ok || {_,MsgTime} <- Mail, MsgTime == Time]) > 0
-                  end, Procs),
-  hd(ProcWithTime).
+% select_proc_with_time(Procs, Time) ->
+%   ProcWithTime =
+%     lists:filter( fun (Proc) ->
+%                     Mail = Proc#proc.mail,
+%                     length([ ok || {_,MsgTime} <- Mail, MsgTime == Time]) > 0
+%                   end, Procs),
+%   hd(ProcWithTime).
 
 %%--------------------------------------------------------------------
 %% @doc Returns the processes that contain a send item in history
@@ -282,22 +281,32 @@ replace(Var, SubExp, SuperExp) ->
 %%--------------------------------------------------------------------
 pp_system(#sys{msgs = Msgs, procs = Procs}, Opts) ->
   pp_msgs(Msgs) ++ "\n" ++ pp_procs(Procs, Opts).
+  % pp_queues(Msgs) ++ "\n" ++ pp_procs(Procs, Opts).
 
 pp_msgs(Msgs) ->
   MsgsList = [pp_msg(Msg) || Msg <- Msgs],
   "GM: [" ++ string:join(MsgsList,",") ++ "]\n".
 
+% pp_queues(Queues) ->
+%   QueueList = [pp_queue(Queue) || Queue <- Queues],
+%   "GM: [" ++ string:join(QueueList,"\n") ++ "]\n".
+
+% pp_queue({{From, To}, Msgs}) ->
+%   MsgList = string:join([pp_msg(Msg) || Msg <- Msgs], ","),
+%   "{" ++ pp(From) ++ "," ++ pp(To) ++ "} : " ++ MsgList.
+
 pp_msg(#msg{dest = DestPid, val = MsgValue, time = Time}) ->
   "(" ++ pp(DestPid) ++ ",{" ++ pp(MsgValue) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ "})".
+% pp_msg(#msg{val = MsgValue, time = Time}) ->
+%   "{" ++ pp(MsgValue) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ "}".
 
 pp_procs(Procs, Opts) ->
   SortProcs = lists:sort(fun(P1, P2) -> P1#proc.pid < P2#proc.pid end, Procs),
   ProcsList = [pp_proc(Proc, Opts) || Proc <- SortProcs],
   string:join(ProcsList,"\n").
 
-pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, mail = Mail, spf = Fun}, Opts) ->
+pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, spf = Fun}, Opts) ->
   pp_pre(Pid, Fun) ++
-  pp_mail(Mail, Opts) ++
   pp_hist(Hist, Opts) ++
   pp_env(Env, Exp, Opts)++
   pp(Exp, Opts).
@@ -358,25 +367,10 @@ pp_hist_2({self,_,_}) ->
   "self";
 pp_hist_2({spawn,_,_,Pid}) ->
   "spawn(" ++ [{?CAUDER_GREEN, pp(Pid)}] ++ ")";
-pp_hist_2({send,_,_,_,{Value,Time}}) ->
+pp_hist_2({send,_,_,_,{Value, Time}}) ->
   "send(" ++ pp(Value) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ ")";
-pp_hist_2({rec,_,_,{Value,Time},_}) ->
+pp_hist_2({rec,_,_,#msg{val = Value, time = Time},_}) ->
   "rec(" ++ pp(Value) ++ "," ++ [{?wxBLUE, integer_to_list(Time)}] ++ ")".
-
-pp_mail(Mail, Opts) ->
-  case proplists:get_value(?PRINT_MAIL, Opts) of
-    false -> "";
-    true  -> "LM: " ++ pp_mail_1(Mail) ++ "\n"
-  end.
-
-pp_mail_1([]) -> "[]";
-pp_mail_1(Mail) ->
-  MailList = [pp_msg_mail(Val, Time) || {Val, Time} <- Mail],
-  "[" ++ string:join(MailList,",") ++ "]".
-
-pp_msg_mail(Val, Time) ->
-  "{" ++ pp(Val) ++ "," ++  [{?CAUDER_GREEN, integer_to_list(Time)}] ++ "}".
-
 
 pp(CoreForm, Opts) ->
   case proplists:get_value(?PRINT_EXP, Opts) of
@@ -491,6 +485,36 @@ toErlang(Expr) ->
       false -> cerl:fold_literal(Expr)
     end,
   cerl:concrete(LitExpr).
+
+old_msg(Msgs, From, To, NewMsg) ->
+  case proplists:get_value({From, To}, Msgs, undefined) of
+    undefined ->
+      none;
+    OldMsgs ->
+      hd(OldMsgs)
+  end.
+
+add_msg(Msgs, From, To, NewMsg) ->
+  case proplists:get_value({From, To}, Msgs, undefined) of
+    undefined ->
+      NewMsgs = Msgs ++ [{{From, To}, [NewMsg]}];
+    OtherMsgs ->
+      RestQueues = proplists:delete({From, To}, Msgs),
+      NewMsgs = RestQueues ++ [{From, To}, OtherMsgs ++ [NewMsg]]
+  end,
+  NewMsgs.
+
+rmv_msg(Msgs, From, To, NewMsg) ->
+  TargetQueue = proplists:get_value({From, To}, Msgs),
+  NewMsgs =
+    case TargetQueue of
+      [_OneMsg] ->
+        proplists:delete({From, To}, Msgs);
+      ManyMsgs ->
+        RestQueues = proplists:delete({From, To}, Msgs),
+        RestQueues ++ [{From, To}, tl(ManyMsgs)]
+  end,
+  NewMsgs.
 
 %%--------------------------------------------------------------------
 %% @doc Filters the options with identifier Id

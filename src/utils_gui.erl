@@ -2,7 +2,7 @@
 -export([is_app_loaded/0, is_app_running/0,
          option_to_button_label/1, button_to_option/1,
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
-         set_choices/1, disable_all_buttons/0, enable_perm_buttons/0,
+         disable_all_buttons/0, enable_perm_buttons/0,
          clear_texts/0, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
          sttext_roll/2, sttext_roll_send/2, sttext_roll_spawn/2,
@@ -52,13 +52,9 @@ button_to_option(Button) ->
     ?FORW_INT_BUTTON ->
       Rule = get_rule_from_button(Button),
       #opt{sem = ?FWD_SEM, type = ?TYPE_PROC, rule = Rule};
-    ?FORW_SCH_BUTTON ->
-      #opt{sem = ?FWD_SEM, type = ?TYPE_MSG, rule = ?RULE_SCHED};
     ?BACK_INT_BUTTON ->
       Rule = get_rule_from_button(Button),
-      #opt{sem = ?BWD_SEM, type = ?TYPE_PROC, rule = Rule};
-    ?BACK_SCH_BUTTON ->
-      #opt{sem = ?BWD_SEM, type = ?TYPE_MSG, rule = ?RULE_SCHED}
+      #opt{sem = ?BWD_SEM, type = ?TYPE_PROC, rule = Rule}
   end.
 
 option_to_button_label(Option) ->
@@ -68,12 +64,12 @@ option_to_button_label(Option) ->
     case Sem of
       ?FWD_SEM ->
         case Type of
-          ?TYPE_MSG  -> ?FORW_SCH_BUTTON;
+          % ?TYPE_MSG  -> ?FORW_SCH_BUTTON;
           ?TYPE_PROC -> ?FORW_INT_BUTTON
         end;
       ?BWD_SEM ->
         case Type of
-          ?TYPE_MSG  -> ?BACK_SCH_BUTTON;
+          % ?TYPE_MSG  -> ?BACK_SCH_BUTTON;
           ?TYPE_PROC -> ?BACK_INT_BUTTON
         end
     end,
@@ -111,9 +107,9 @@ set_ref_button_if(Ref, Cond) ->
 
 disable_all_buttons() ->
   ForwIntButton   = ref_lookup(?FORW_INT_BUTTON),
-  ForwSchButton   = ref_lookup(?FORW_SCH_BUTTON),
+  % ForwSchButton   = ref_lookup(?FORW_SCH_BUTTON),
   BackIntButton   = ref_lookup(?BACK_INT_BUTTON),
-  BackSchButton   = ref_lookup(?BACK_SCH_BUTTON),
+  % BackSchButton   = ref_lookup(?BACK_SCH_BUTTON),
   ForwardButton   = ref_lookup(?FORWARD_BUTTON),
   BackwardButton  = ref_lookup(?BACKWARD_BUTTON),
   NormalizeButton = ref_lookup(?NORMALIZE_BUTTON),
@@ -123,9 +119,9 @@ disable_all_buttons() ->
   RollRecButton   = ref_lookup(?ROLL_REC_BUTTON),
   RollVarButton   = ref_lookup(?ROLL_VAR_BUTTON),
   wxButton:disable(ForwIntButton),
-  wxButton:disable(ForwSchButton),
+  % wxButton:disable(ForwSchButton),
   wxButton:disable(BackIntButton),
-  wxButton:disable(BackSchButton),
+  % wxButton:disable(BackSchButton),
   wxButton:disable(ForwardButton),
   wxButton:disable(BackwardButton),
   wxButton:disable(NormalizeButton),
@@ -147,11 +143,11 @@ enable_perm_buttons() ->
   wxButton:enable(RollRecButton),
   wxButton:enable(RollVarButton).
 
-set_choices(Choices) ->
-  FunChoice = ref_lookup(?FUN_CHOICE),
-  wxChoice:clear(FunChoice),
-  [wxChoice:append(FunChoice, Choice) || Choice <- Choices],
-  wxChoice:setSelection(FunChoice, 0).
+% set_choices(Choices) ->
+%   FunChoice = ref_lookup(?FUN_CHOICE),
+%   wxChoice:clear(FunChoice),
+%   [wxChoice:append(FunChoice, Choice) || Choice <- Choices],
+%   wxChoice:setSelection(FunChoice, 0).
 
 clear_texts() ->
   StateText = ref_lookup(?STATE_TEXT),
