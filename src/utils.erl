@@ -6,7 +6,7 @@
 -module(utils).
 -export([fundef_lookup/2, fundef_rename/1, substitute/2,
          build_var/1, build_var/2, pid_exists/2,
-         select_proc/2, select_msg/2, select_proc_with_send/2,
+         select_proc/2, select_msg/2, check_msg/2, select_proc_with_send/2,
          select_proc_with_spawn/2, select_proc_with_rec/2,
          select_proc_with_var/2, list_from_core/1,
          update_env/2, merge_env/2,
@@ -120,6 +120,15 @@ select_msg(Msgs, Time) ->
   [Msg] = [ M || M <- Msgs, M#msg.time == Time],
   RestMsgs = [ M || M <- Msgs, M#msg.time /= Time],
   {Msg, RestMsgs}.
+
+check_msg(Msgs, Time) ->
+  MsgsT = [ M || M <- Msgs, M#msg.time == Time],
+  case MsgsT of
+    [] ->
+      none;
+    [Msg] ->
+      Msg
+  end.
 
 %%--------------------------------------------------------------------
 %% @doc Returns the process that contains a message with id Time

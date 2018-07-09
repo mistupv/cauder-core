@@ -301,15 +301,15 @@ eval_step(System, Pid) ->
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
-        {Bindings, RecExp, ConsMsg, NewMail} = matchrec(ReceiveClauses, Msgs, NewEnv),
+        {Bindings, RecExp, ConsMsg, NewMsgs} = matchrec(ReceiveClauses, Env, Log, Msgs),
         UpdatedEnv = utils:merge_env(NewEnv, Bindings),
         RepExp = utils:replace(Var, RecExp, NewExp),
         NewHist = [{rec, Env, Exp, ConsMsg}|Hist],
         NewProc = Proc#proc{hist = NewHist, env = UpdatedEnv, exp = RepExp},
-        {MsgValue, Time} = ConsMsg, 
+        #msg{val = MsgValue, time = Time} = ConsMsg, 
         TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
         NewTrace = [TraceItem|Trace],
-        System#sys{msgs = Msgs, procs = [NewProc|RestProcs], trace = NewTrace}
+        System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs], trace = NewTrace}
     end,
   NewSystem.
 
@@ -351,25 +351,31 @@ eval_list(Env,[Exp|Exps]) ->
       {NewEnv,[Exp|NewExp],Label}
   end.
 
-matchrec(Clauses, Mail,Env) ->
-  matchrec(Clauses, Mail, [],Env).
+% matchrec(Clauses, Mail,Env) ->
+%   matchrec(Clauses, Mail, [],Env).
 
-matchrec(_, [], _, _) ->
+matchrec(_, _, [], _) ->
   no_match;
-matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs, Env) ->
-  {MsgValue, _MsgTime} = CurMsg,
-  %io:format("matchrec (MsgValue): ~p~n",[MsgValue]),
-  %io:format("matchrec (Clauses): ~p~n",[Clauses]),
-  %%preprocessing is used to propagate matching bindings to guards
-  NewClauses = preprocessing_clauses(Clauses,MsgValue,Env),
-  %io:format("matchrec (NewClauses): ~p~n",[NewClauses]),
-  case cerl_clauses:reduce(NewClauses, [MsgValue]) of
-    {true, {Clause, Bindings}} ->
-      ClauseBody = cerl:clause_body(Clause),
-      NewMsgs =  AccMsgs ++ RestMsgs,
-      {Bindings, ClauseBody, CurMsg, NewMsgs};
-    {false, _} ->
-      matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env)
+matchrec(Clauses, Env, Log, Msgs) ->
+  case Log of
+    [] -> no_match;
+    [TopLog | _] ->
+      case TopLog of
+        {'receive', Stamp} ->          
+          case utils:check_msg(Msgs, Stamp) of
+            none -> no_match;
+            Msg ->
+              MsgValue = Msg#msg.val,
+              NewClauses =
+                preprocessing_clauses(Clauses,MsgValue,Env),
+              {true, {Clause, Bindings}} =
+                cerl_clauses:reduce(NewClauses, [MsgValue]),
+              ClauseBody = cerl:clause_body(Clause),
+              NewMsgs = lists:delete(Msg, Msgs),
+              {Bindings, ClauseBody, Msg, NewMsgs}
+          end;
+        _ -> no_match
+      end
   end.
 
 preprocessing_clauses(Clauses,Msg,Env) ->
@@ -411,20 +417,21 @@ eval_opts(System) ->
 
 eval_procs_opts(#sys{procs = []}) ->
   [];
-eval_procs_opts(#sys{procs = [CurProc|RestProcs]}) ->
+eval_procs_opts(#sys{msgs = Msgs, procs = [CurProc|RestProcs]}) ->
+  Pid = CurProc#proc.pid,
+  Log = CurProc#proc.log,
   Exp = CurProc#proc.exp,
   Env = CurProc#proc.env,
-  Pid = CurProc#proc.pid,
   % Mail = CurProc#proc.mail,
   % case eval_exp_opt(Exp, Env, Mail) of
-    case eval_exp_opt(Exp, Env, []) of
+    case eval_exp_opt(Exp, Env, Log, Msgs) of
     ?NOT_EXP ->
-      eval_procs_opts(#sys{procs = RestProcs});
+      eval_procs_opts(#sys{msgs = Msgs, procs = RestProcs});
     Opt ->
       [Opt#opt{sem = ?MODULE, type = ?TYPE_PROC, id = cerl:concrete(Pid)}|eval_procs_opts(#sys{procs = RestProcs})]
   end.
 
-eval_exp_opt(Exp, Env, Mail) ->
+eval_exp_opt(Exp, Env, Log, Msgs) ->
   case is_exp(Exp) of
     false ->
       ?NOT_EXP;
@@ -437,24 +444,24 @@ eval_exp_opt(Exp, Env, Mail) ->
           ConsTlExp = cerl:cons_tl(Exp),
           case is_exp(ConsHdExp) of
             true ->
-              eval_exp_opt(ConsHdExp, Env, Mail);
+              eval_exp_opt(ConsHdExp, Env, Log, Msgs);
             false ->
               case is_exp(ConsTlExp) of
                 true ->
-                  eval_exp_opt(ConsTlExp, Env, Mail);
+                  eval_exp_opt(ConsTlExp, Env, Log, Msgs);
                 false ->
                   ?NOT_EXP
               end
           end;
         values ->
-          eval_exp_list_opt(cerl:values_es(Exp), Env, Mail);
+          eval_exp_list_opt(cerl:values_es(Exp), Env, Log, Msgs);
         tuple ->
-          eval_exp_list_opt(cerl:tuple_es(Exp), Env, Mail);
+          eval_exp_list_opt(cerl:tuple_es(Exp), Env, Log, Msgs);
         apply ->
           ApplyArgs = cerl:apply_args(Exp),
           case is_exp(ApplyArgs) of
             true ->
-              eval_exp_list_opt(ApplyArgs, Env, Mail);
+              eval_exp_list_opt(ApplyArgs, Env, Log, Msgs);
             false ->
               #opt{rule = ?RULE_SEQ}
           end;
@@ -462,7 +469,7 @@ eval_exp_opt(Exp, Env, Mail) ->
           LetArg = cerl:let_arg(Exp),
           case is_exp(LetArg) of
             true ->
-              eval_exp_opt(LetArg, Env, Mail);
+              eval_exp_opt(LetArg, Env, Log, Msgs);
             false ->
               #opt{rule = ?RULE_SEQ}
           end;
@@ -470,7 +477,7 @@ eval_exp_opt(Exp, Env, Mail) ->
           SeqArg = cerl:seq_arg(Exp),
           case is_exp(SeqArg) of
             true ->
-              eval_exp_opt(SeqArg, Env, Mail);
+              eval_exp_opt(SeqArg, Env, Log, Msgs);
             false ->
               #opt{rule = ?RULE_SEQ}
           end;
@@ -478,7 +485,7 @@ eval_exp_opt(Exp, Env, Mail) ->
           CaseArg = cerl:case_arg(Exp),
           case is_exp(CaseArg) of
             true ->
-              eval_exp_opt(CaseArg, Env, Mail);
+              eval_exp_opt(CaseArg, Env, Log, Msgs);
             false ->
               #opt{rule = ?RULE_SEQ}
           end;
@@ -486,30 +493,36 @@ eval_exp_opt(Exp, Env, Mail) ->
           CallModule = cerl:call_module(Exp),
           case is_exp(CallModule) of
             true ->
-              eval_exp_opt(CallModule, Env, Mail);
+              eval_exp_opt(CallModule, Env, Log, Msgs);
             false ->
               CallName = cerl:call_name(Exp),
               case is_exp(CallName) of
                 true ->
-                  eval_exp_opt(CallName, Env, Mail);
+                  eval_exp_opt(CallName, Env, Log, Msgs);
                 false ->
                   CallArgs = cerl:call_args(Exp),
                   case is_exp(CallArgs) of
                     true ->
-                      eval_exp_list_opt(CallArgs, Env, Mail);
+                      eval_exp_list_opt(CallArgs, Env, Log, Msgs);
                     false ->
                       case {CallModule, CallName} of
-                        {{c_literal, _, 'erlang'},{c_literal, _, 'spawn'}} -> #opt{rule = ?RULE_SPAWN};
-                        {{c_literal, _, 'erlang'},{c_literal, _, 'self'}} -> #opt{rule = ?RULE_SELF};
-                        {{c_literal, _, 'erlang'},{c_literal, _, '!'}} -> #opt{rule = ?RULE_SEND};
+                        {{c_literal, _, 'erlang'},{c_literal, _, 'spawn'}} ->
+                          % Check log head for spawn item
+                          #opt{rule = ?RULE_SPAWN};
+                        {{c_literal, _, 'erlang'},{c_literal, _, 'self'}} ->
+                          #opt{rule = ?RULE_SELF};
+                        {{c_literal, _, 'erlang'},{c_literal, _, '!'}} ->
+                          % Check log head for send item
+                          #opt{rule = ?RULE_SEND};
                         _ -> #opt{rule = ?RULE_SEQ}
                       end
                   end
               end
           end;
         'receive' ->
+          % Use log to check if exists msg with lambda
           ReceiveClauses = cerl:receive_clauses(Exp),
-          case matchrec(ReceiveClauses, Mail, Env) of
+          case matchrec(ReceiveClauses, Env, Log, Msgs) of
             no_match ->
               ?NOT_EXP;
             _Other ->
@@ -518,12 +531,12 @@ eval_exp_opt(Exp, Env, Mail) ->
       end
   end.
 
-eval_exp_list_opt([], _, _) ->
+eval_exp_list_opt([], _, _, _) ->
   ?NOT_EXP;
-eval_exp_list_opt([CurExp|RestExp], Env, Mail) ->
+eval_exp_list_opt([CurExp|RestExp], Env, Log, Msgs) ->
   case is_exp(CurExp) of
-    true -> eval_exp_opt(CurExp, Env, Mail);
-    false -> eval_exp_list_opt(RestExp, Env, Mail)
+    true -> eval_exp_opt(CurExp, Env, Log, Msgs);
+    false -> eval_exp_list_opt(RestExp, Env, Log, Msgs)
   end.
 
 ref_add(Id, Ref) ->
