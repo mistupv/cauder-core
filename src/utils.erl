@@ -326,7 +326,7 @@ pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, spf = Fun}, Opts) ->
   pp(Exp, Opts).
 
 pp_pre(Pid, Fun) ->
-  "=============== " ++ pp_pid(Pid) ++ ": " ++ pp_fun(Fun)++ " ===============\n".
+  "============= " ++ pp_pid(Pid) ++ ": " ++ pp_fun(Fun)++ " =============\n".
 
 pp_pid(Pid) ->
   "Proc. " ++ pp(Pid).
@@ -500,13 +500,13 @@ toErlang(Expr) ->
     end,
   cerl:concrete(LitExpr).
 
-old_msg(Msgs, From, To, NewMsg) ->
-  case proplists:get_value({From, To}, Msgs, undefined) of
-    undefined ->
-      none;
-    OldMsgs ->
-      hd(OldMsgs)
-  end.
+% old_msg(Msgs, From, To, NewMsg) ->
+%   case proplists:get_value({From, To}, Msgs, undefined) of
+%     undefined ->
+%       none;
+%     OldMsgs ->
+%       hd(OldMsgs)
+%   end.
 
 add_msg(Msgs, From, To, NewMsg) ->
   case proplists:get_value({From, To}, Msgs, undefined) of
@@ -518,17 +518,17 @@ add_msg(Msgs, From, To, NewMsg) ->
   end,
   NewMsgs.
 
-rmv_msg(Msgs, From, To, NewMsg) ->
-  TargetQueue = proplists:get_value({From, To}, Msgs),
-  NewMsgs =
-    case TargetQueue of
-      [_OneMsg] ->
-        proplists:delete({From, To}, Msgs);
-      ManyMsgs ->
-        RestQueues = proplists:delete({From, To}, Msgs),
-        RestQueues ++ [{From, To}, tl(ManyMsgs)]
-  end,
-  NewMsgs.
+% rmv_msg(Msgs, From, To, NewMsg) ->
+%   TargetQueue = proplists:get_value({From, To}, Msgs),
+%   NewMsgs =
+%     case TargetQueue of
+%       [_OneMsg] ->
+%         proplists:delete({From, To}, Msgs);
+%       ManyMsgs ->
+%         RestQueues = proplists:delete({From, To}, Msgs),
+%         RestQueues ++ [{From, To}, tl(ManyMsgs)]
+%   end,
+%   NewMsgs.
 
 %%--------------------------------------------------------------------
 %% @doc Filters the options with identifier Id
