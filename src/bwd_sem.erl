@@ -41,52 +41,23 @@ eval_step(System, Pid) ->
       TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
       OldTrace = lists:delete(TraceItem, Trace),
       System#sys{msgs = Msgs, procs = [OldProc|OldRestProcs], trace = OldTrace};
-    {rec, OldEnv, OldExp, OldMsg, OldMail} ->
-      OldProc = Proc#proc{hist = RestHist, env = OldEnv, exp = OldExp},
-      {MsgValue, Time} = OldMsg,
+    {rec, OldEnv, OldExp, OldMsg} ->
+      Time = OldMsg#msg.time,
+      MsgValue = OldMsg#msg.val,
+      OldLog = [{'receive', Time}|Log],
+      OldProc = Proc#proc{log = OldLog, hist = RestHist, env = OldEnv, exp = OldExp},
       TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
       OldTrace = lists:delete(TraceItem, Trace),
-      System#sys{msgs = Msgs, procs = [OldProc|RestProcs], trace = OldTrace}
+      System#sys{msgs = [OldMsg|Msgs], procs = [OldProc|RestProcs], trace = OldTrace}
   end.
-
-%%--------------------------------------------------------------------
-%% @doc Performs an evaluation step in message Id, given System
-%% @end
-%%--------------------------------------------------------------------
-% eval_sched(System, Id) ->
-%   Procs = System#sys.procs,
-%   Msgs = System#sys.msgs,
-%   Proc = utils:select_proc_with_time(Procs, Id),
-%   Pid = Proc#proc.pid,
-%   {_, RestProcs} = utils:select_proc(Procs, Pid),
-%   Mail = Proc#proc.mail,
-%   {LastMsg,RestMail} = utils:last_msg_rest(Mail),
-%   {Value, Id} = LastMsg,
-%   % OldMsg = #msg{dest = Pid, val = Value, time = Id},
-%   OldMsg = #msg{val = Value, time = Id},
-%   OldProc = Proc#proc{mail = RestMail},
-%   OldMsgs = [OldMsg|Msgs],
-%   OldProcs = [OldProc|RestProcs],
-%   System#sys{msgs = OldMsgs, procs = OldProcs}.
 
 %%--------------------------------------------------------------------
 %% @doc Gets the evaluation options for a given System
 %% @end
 %%--------------------------------------------------------------------
 eval_opts(System) ->
-  % SchedOpts = eval_sched_opts(System),
   ProcsOpts = eval_procs_opts(System),
   ProcsOpts.
-  % SchedOpts ++ ProcsOpts.
-
-% eval_sched_opts(#sys{procs = Procs}) ->
-%   Opts = [eval_sched_opt(Proc) || Proc <- Procs],
-%   lists:filter(fun (X) ->
-%                   case X of
-%                     ?NULL_OPT -> false;
-%                     _ -> true
-%                   end
-%                 end, Opts).
 
 eval_procs_opts(System) ->
   Procs = System#sys.procs,
@@ -112,13 +83,10 @@ eval_proc_opt(RestSystem, CurProc) ->
         case CurHist of
           {tau,_,_} ->  ?RULE_SEQ;
           {self,_,_} -> ?RULE_SELF;
-          {send,_,_, DestPid, {MsgValue, Time}} ->
-            MsgList = [ M || M <- Msgs, M#msg.time == Time,
-                                        % M#msg.dest == DestPid,
-                                        M#msg.val == MsgValue ],
-            case MsgList of
-              [] -> ?NULL_RULE;
-              _ -> ?RULE_SEND
+          {send,_,_,_,{_, Time}} ->
+            case utils:check_msg(Msgs, Time) of
+              none -> ?NULL_RULE;
+              _    -> ?RULE_SEND
             end;
           {spawn,_,_,SpawnPid} ->
             {SpawnProc, _RestProcs} = utils:select_proc(RestProcs, SpawnPid),
@@ -127,7 +95,7 @@ eval_proc_opt(RestSystem, CurProc) ->
               [] -> ?RULE_SPAWN;
               _  -> ?NULL_RULE
             end;
-          {rec,_,_, ConsMsg} ->
+          {rec,_,_, _} ->
               ?RULE_RECEIVE
         end
     end,
@@ -138,26 +106,3 @@ eval_proc_opt(RestSystem, CurProc) ->
       #opt{sem = ?MODULE, type = ?TYPE_PROC, id = cerl:concrete(Pid), rule = OtherRule}
   end.
 
-% eval_sched_opt(Proc) ->
-%   #proc{hist = Hist, mail = Mail} = Proc,
-%   Rule =
-%     case Mail of
-%       [] -> ?NULL_RULE;
-%       _ ->
-%         {LastMsg,_} = utils:last_msg_rest(Mail),
-%         {_,Time} = LastMsg,
-%         TopRec = utils:topmost_rec(Hist),
-%         case TopRec of
-%           no_rec -> {?RULE_SCHED, Time};
-%           {rec,_,_,OldMsg,OldMail} ->
-%             case utils:is_queue_minus_msg(OldMail, OldMsg, Mail) of
-%               false -> {?RULE_SCHED, Time};
-%               true -> ?NULL_RULE
-%             end
-%         end
-%     end,
-%   case Rule of
-%     ?NULL_RULE -> ?NULL_OPT;
-%     {OtherRule, Id} ->
-%       #opt{sem = ?MODULE, type = ?TYPE_MSG, id = Id, rule = OtherRule}
-%   end.
