@@ -507,13 +507,21 @@ eval_exp_opt(Exp, Env, Log, Msgs) ->
                     false ->
                       case {CallModule, CallName} of
                         {{c_literal, _, 'erlang'},{c_literal, _, 'spawn'}} ->
-                          % Check log head for spawn item
-                          #opt{rule = ?RULE_SPAWN};
+                          case utils:check_log(Log) of
+                            {spawn, _} ->
+                              #opt{rule = ?RULE_SPAWN};
+                            _ ->
+                              ?NOT_EXP
+                          end;
                         {{c_literal, _, 'erlang'},{c_literal, _, 'self'}} ->
                           #opt{rule = ?RULE_SELF};
                         {{c_literal, _, 'erlang'},{c_literal, _, '!'}} ->
-                          % Check log head for send item
-                          #opt{rule = ?RULE_SEND};
+                          case utils:check_log(Log) of
+                            {send, _} ->
+                              #opt{rule = ?RULE_SEND};
+                            _ ->
+                              ?NOT_EXP
+                          end;
                         _ -> #opt{rule = ?RULE_SEQ}
                       end
                   end
