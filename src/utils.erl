@@ -18,7 +18,7 @@
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
          extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1,
-         log_token_val/1, add_msg/4]).
+         log_token_val/1, add_msg/4, check_log/1]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -129,6 +129,11 @@ check_msg(Msgs, Time) ->
     [Msg] ->
       Msg
   end.
+
+check_log([]) ->
+  none;
+check_log([Item|_]) ->
+  Item.
 
 %%--------------------------------------------------------------------
 %% @doc Returns the process that contains a message with id Time
