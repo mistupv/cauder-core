@@ -50,12 +50,9 @@ eval_opts(System) ->
   FwdOpts ++ BwdOpts.
 
 eval_step(System, Option) ->
-  #opt{sem = Semantics, type = Type, id = Id} = Option,
+  #opt{sem = Semantics, id = Id} = Option,
   NewSystem =
-    case Type of
-      ?TYPE_MSG -> Semantics:eval_sched(System,Id);
-      ?TYPE_PROC -> Semantics:eval_step(System,cerl:c_int(Id))
-    end,
+    Semantics:eval_step(System, cerl:c_int(Id)),
   NewSystem.
 
 %%--------------------------------------------------------------------
@@ -74,12 +71,12 @@ eval_mult_1(System, Option, Steps, StepsDone) ->
       ?MULT_FWD -> fwd_sem;
       ?MULT_BWD -> bwd_sem
     end,
-  SelOpt = sched:select_opt(Sem, System),
-  case SelOpt of
-    none ->
+  Opts = Sem:eval_opts(System),
+  case Opts of
+    [] ->
       {System, StepsDone};
-    _ ->
-      NewSystem = eval_step(System, SelOpt),
+    [FstOpt|_] ->
+      NewSystem = eval_step(System, FstOpt),
       eval_mult_1(NewSystem, Option, Steps, StepsDone + 1)
   end.
 
