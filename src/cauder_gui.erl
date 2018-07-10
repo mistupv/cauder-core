@@ -579,8 +579,7 @@ loadReplayData(Path) ->
   MainPid = ReplayData#replay.main_pid,
   MainLog = utils:extract_pid_log_data(Path, MainPid),
   SMainPid = utils:log_token_val(MainPid),
-  start(cerl:c_var({Fun,length(Args)}), Args, SMainPid, MainLog),
-  cauder:eval_replay().
+  start(cerl:c_var({Fun,length(Args)}), Args, SMainPid, MainLog).
 
 openDialog(Parent) ->
   Caption = "Select an Erlang file",
@@ -637,13 +636,30 @@ zoomOut() ->
   wxTextCtrl:setFont(CodeText, NewFont),
   wxTextCtrl:setFont(StateText, NewFont).
 
+load_ghosts(ExceptPid) ->
+  ReplayData = get(replay_data),
+  Path = ReplayData#replay.log_path,
+  {ok, Filenames} = file:list_dir(Path),
+  RestFilenames = Filenames -- ["trace_result.log",
+                                "trace_" ++ integer_to_list(ExceptPid) ++ ".log"],
+  Captures = [re:run(FileName, "trace_(\\d+).log", [{capture,[1]}]) || FileName <- RestFilenames],
+  ZCaptures = lists:zip(Captures, RestFilenames),
+  FCaptures = [{hd(L), F} || {{match, L}, F} <- ZCaptures],
+  Pids = [string:substr(F, I + 1, L) || {{I,L},F} <- FCaptures],
+  [begin
+     #proc{pid = cerl:c_int(list_to_integer(P)),
+           log = utils:extract_pid_log_data(Path, P)}
+   end ||
+     P <- Pids].
+
 init_system(Fun, Args, Pid, Log) ->
   Proc = #proc{pid = cerl:c_int(Pid),
                log = Log,
                exp = cerl:c_apply(Fun, Args),
                spf = cerl:var_name(Fun)},
+  GhostProcs = load_ghosts(Pid),
   Procs = [Proc],
-  System = #sys{procs = Procs},
+  System = #sys{procs = Procs, ghosts = GhostProcs},
   ref_add(?SYSTEM, System),
   Status = ref_lookup(?STATUS),
   NewStatus = Status#status{running = true},

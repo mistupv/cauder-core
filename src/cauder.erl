@@ -10,7 +10,7 @@
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
          eval_roll/3, eval_roll_send/2, eval_roll_spawn/2,
-         eval_roll_rec/2, eval_roll_var/2, eval_replay/0]).
+         eval_roll_rec/2, eval_roll_var/2, eval_replay/3]).
 
 -include("cauder.hrl").
 
@@ -101,11 +101,26 @@ eval_norm_1(System, Steps) ->
       eval_norm_1(NewSystem, Steps + 1)
   end.
 
+eval_replay(System, Pid, Steps) ->
+  {ReplayedSystem, StepsDone} = eval_replay_1(System, Pid, Steps, 0),
+  {ReplayedSystem, StepsDone}.
+
 eval_roll(System, Pid, Steps) ->
   EmptyLogSystem = utils:empty_log(System),
   {RolledSystem, StepsDone} = eval_roll_1(EmptyLogSystem, Pid, Steps, 0),
   FocusLog = utils:must_focus_log(RolledSystem),
   {FocusLog, RolledSystem, StepsDone}.
+
+eval_replay_1(System, _Pid, Steps, Steps) ->
+  {System, Steps};
+eval_replay_1(System, Pid, Steps, StepsDone) ->
+  case replay:can_replay(System, Pid) of
+    false ->
+      {System, StepsDone};
+    true ->
+      NewSystem = replay:eval_step(System, Pid),
+      eval_replay_1(NewSystem, Pid, Steps, StepsDone + 1)
+  end.
 
 eval_roll_1(System, _Pid, Steps, Steps) ->
   {System, Steps};
@@ -162,8 +177,8 @@ eval_roll_var(System, Id) ->
       {true, FocusLog, RolledSystem}
   end.
 
-eval_replay() ->
-  ok.
+% eval_replay() ->
+%   ok.
 
 ref_add(Id, Ref) ->
     ets:insert(?APP_REF, {Id, Ref}).

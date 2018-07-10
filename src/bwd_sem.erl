@@ -35,12 +35,13 @@ eval_step(System, Pid) ->
       OldTrace = lists:delete(TraceItem, Trace),
       System#sys{msgs = RestMsgs, procs = [OldProc|RestProcs], trace = OldTrace};
     {spawn, OldEnv, OldExp, SpawnPid} ->
-      {_SpawnProc, OldRestProcs} = utils:select_proc(RestProcs, SpawnPid),
+      {SpawnProc, OldRestProcs} = utils:select_proc(RestProcs, SpawnPid),
+      OldGhost = System#sys.ghosts,
       OldLog = [{spawn,cerl:concrete(SpawnPid)}|Log],
       OldProc = Proc#proc{log = OldLog, hist = RestHist, env = OldEnv, exp = OldExp},
       TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
       OldTrace = lists:delete(TraceItem, Trace),
-      System#sys{msgs = Msgs, procs = [OldProc|OldRestProcs], trace = OldTrace};
+      System#sys{msgs = Msgs, ghosts = [SpawnProc|OldGhost], procs = [OldProc|OldRestProcs], trace = OldTrace};
     {rec, OldEnv, OldExp, OldMsg} ->
       Time = OldMsg#msg.time,
       MsgValue = OldMsg#msg.val,

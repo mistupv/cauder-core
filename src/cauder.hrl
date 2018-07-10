@@ -69,6 +69,7 @@
 
 -record(sys, {msgs  = [],
               procs = [],
+              ghosts,
               trace = [],
               roll  = []}).
 

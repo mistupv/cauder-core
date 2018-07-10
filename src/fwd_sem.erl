@@ -281,11 +281,14 @@ eval_step(System, Pid) ->
         SpawnPid = cerl:c_int(PidNum),
         ArgsLen = length(FunArgs),
         FunCall = cerl:c_var({cerl:concrete(FunName), ArgsLen}),
-        ReplayData = get(replay_data),
-        Path = ReplayData#replay.log_path,
-        PidText = integer_to_list(PidNum),
+        % ReplayData = get(replay_data),
+        % Path = ReplayData#replay.log_path,
+        % PidText = integer_to_list(PidNum),
+        {SpawnGProc, RestGProcs} =
+          utils:select_proc(System#sys.ghosts, cerl:c_int(PidNum)),
         SpawnProc = #proc{pid = SpawnPid,
-                          log = utils:extract_pid_log_data(Path, PidText),
+                          % log = utils:extract_pid_log_data(Path, PidText),
+                          log = SpawnGProc#proc.log,
                           env = [],
                           exp = cerl:c_apply(FunCall,FunArgs),
                           spf = cerl:var_name(FunCall)},
@@ -295,7 +298,7 @@ eval_step(System, Pid) ->
         NewProc = Proc#proc{hist = NewHist, log = NewLog, env = NewEnv, exp = RepExp},
         TraceItem = #trace{type = ?RULE_SPAWN, from = Pid, to = SpawnPid},
         NewTrace = [TraceItem|Trace],
-        System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
+        System#sys{msgs = Msgs, ghosts = RestGProcs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
         {Bindings, RecExp, ConsMsg, NewMsgs} = matchrec(ReceiveClauses, Env, Log, Msgs),
         NewLog = tl(Log),
