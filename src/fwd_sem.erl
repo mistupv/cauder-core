@@ -267,8 +267,6 @@ eval_step(System, Pid) ->
         NewProc = Proc#proc{hist = NewHist, env = NewEnv, exp = RepExp},
         System#sys{msgs = Msgs, procs = [NewProc|RestProcs]};
       {send, DestPid, MsgValue} ->
-        % Time = ref_lookup(?FRESH_TIME),
-        % ref_add(?FRESH_TIME, Time + 1),
         {send, Time} = hd(Log),
         NewMsg = #msg{dest = DestPid, val = MsgValue, time = Time},
         NewMsgs = [NewMsg|Msgs],
@@ -279,8 +277,6 @@ eval_step(System, Pid) ->
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs], trace = NewTrace};
       {spawn, {Var, FunName, FunArgs}} ->
-        % PidNum = ref_lookup(?FRESH_PID),
-        % ref_add(?FRESH_PID, PidNum + 1),
         {spawn, PidNum} = hd(Log),
         SpawnPid = cerl:c_int(PidNum),
         ArgsLen = length(FunArgs),
@@ -302,31 +298,17 @@ eval_step(System, Pid) ->
         System#sys{msgs = Msgs, procs = [NewProc|[SpawnProc|RestProcs]], trace = NewTrace};
       {rec, Var, ReceiveClauses} ->
         {Bindings, RecExp, ConsMsg, NewMsgs} = matchrec(ReceiveClauses, Env, Log, Msgs),
+        NewLog = tl(Log),
         UpdatedEnv = utils:merge_env(NewEnv, Bindings),
         RepExp = utils:replace(Var, RecExp, NewExp),
         NewHist = [{rec, Env, Exp, ConsMsg}|Hist],
-        NewProc = Proc#proc{hist = NewHist, env = UpdatedEnv, exp = RepExp},
+        NewProc = Proc#proc{log = NewLog, hist = NewHist, env = UpdatedEnv, exp = RepExp},
         #msg{val = MsgValue, time = Time} = ConsMsg, 
         TraceItem = #trace{type = ?RULE_RECEIVE, from = Pid, val = MsgValue, time = Time},
         NewTrace = [TraceItem|Trace],
         System#sys{msgs = NewMsgs, procs = [NewProc|RestProcs], trace = NewTrace}
     end,
   NewSystem.
-
-%%--------------------------------------------------------------------
-%% @doc Performs an evaluation step in message Id, given System
-%% @end
-%%--------------------------------------------------------------------
-% eval_sched(System, Id) ->
-%   Procs = System#sys.procs,
-%   Msgs = System#sys.msgs,
-%   {Msg, RestMsgs} = utils:select_msg(Msgs, Id),
-%   #msg{dest = DestPid, val = Value, time = Id} = Msg,
-%   {Proc, RestProcs} = utils:select_proc(Procs, DestPid),
-%   Mail = Proc#proc.mail,
-%   NewMail = Mail ++ [{Value, Id}],
-%   NewProc = Proc#proc{mail = NewMail},
-%   System#sys{msgs = RestMsgs, procs = [NewProc|RestProcs]}.
 
 is_exp([]) -> false;
 is_exp(Exp) when is_list(Exp) ->
@@ -350,9 +332,6 @@ eval_list(Env,[Exp|Exps]) ->
       {NewEnv,NewExp,Label} = eval_list(Env,Exps),
       {NewEnv,[Exp|NewExp],Label}
   end.
-
-% matchrec(Clauses, Mail,Env) ->
-%   matchrec(Clauses, Mail, [],Env).
 
 matchrec(_, _, [], _) ->
   no_match;
@@ -397,23 +376,8 @@ preprocessing_clauses(Clauses,Msg,Env) ->
 %% @end
 %%--------------------------------------------------------------------
 eval_opts(System) ->
-  % SchedOpts = eval_sched_opts(System),
   ProcsOpts = eval_procs_opts(System),
-  % SchedOpts ++ ProcsOpts.
   ProcsOpts.
-
-% eval_sched_opts(#sys{msgs = []}) ->
-%   [];
-% eval_sched_opts(#sys{msgs = [CurMsg|RestMsgs], procs = Procs}) ->
-%   DestPid = CurMsg#msg.dest,
-%   DestProcs = [ P || P <- Procs, P#proc.pid == DestPid],
-%   case DestProcs of
-%     [] ->
-%       eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs});
-%     _Other ->
-%       Time = CurMsg#msg.time,
-%       [#opt{sem = ?MODULE, type = ?TYPE_MSG, id = Time, rule = ?RULE_SCHED}|eval_sched_opts(#sys{msgs = RestMsgs, procs = Procs})]
-%   end.
 
 eval_procs_opts(#sys{procs = []}) ->
   [];
@@ -422,8 +386,6 @@ eval_procs_opts(#sys{msgs = Msgs, procs = [CurProc|RestProcs]}) ->
   Log = CurProc#proc.log,
   Exp = CurProc#proc.exp,
   Env = CurProc#proc.env,
-  % Mail = CurProc#proc.mail,
-  % case eval_exp_opt(Exp, Env, Mail) of
     case eval_exp_opt(Exp, Env, Log, Msgs) of
     ?NOT_EXP ->
       eval_procs_opts(#sys{msgs = Msgs, procs = RestProcs});
@@ -528,12 +490,11 @@ eval_exp_opt(Exp, Env, Log, Msgs) ->
               end
           end;
         'receive' ->
-          % Use log to check if exists msg with lambda
           ReceiveClauses = cerl:receive_clauses(Exp),
           case matchrec(ReceiveClauses, Env, Log, Msgs) of
             no_match ->
               ?NOT_EXP;
-            _Other ->
+            _ ->
               #opt{rule = ?RULE_RECEIVE}
           end
       end
