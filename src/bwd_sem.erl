@@ -6,7 +6,7 @@
 %%%-------------------------------------------------------------------
 
 -module(bwd_sem).
--export([eval_step/2, eval_opts/1]).
+-export([eval_step/2, eval_opts/1, eval_procs_opts/1]).
 
 -include("cauder.hrl").
 
