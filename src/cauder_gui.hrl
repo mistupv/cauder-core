@@ -35,11 +35,15 @@
 -define(BACKWARD_BUTTON,   423).
 -define(NORMALIZE_BUTTON,  424).
 -define(ROLL_BUTTON,       425).
-
 -define(ROLL_SEND_BUTTON,  426).
 -define(ROLL_SPAWN_BUTTON, 427).
 -define(ROLL_REC_BUTTON,   428).
 -define(ROLL_VAR_BUTTON,   429).
+-define(REPLAY_BUTTON,       430).
+-define(REPLAY_SEND_BUTTON,  431).
+-define(REPLAY_SPAWN_BUTTON, 432).
+-define(REPLAY_REC_BUTTON,   433).
+-define(REPLAY_VAR_BUTTON,   434).
 
 -define(SYSTEM,         500).
 -define(STATUS,         501).
@@ -52,8 +56,10 @@
 -define(STEP_TEXT,      512).
 -define(STATE_TEXT,     513).
 -define(CODE_TEXT,      514).
--define(ROLL_PID_TEXT,  515).
--define(ROLL_STEP_TEXT, 516).
+-define(REPLAY_PID_TEXT,  515).
+-define(REPLAY_STEP_TEXT, 516).
+-define(ROLL_PID_TEXT,  517).
+-define(ROLL_STEP_TEXT, 518).
 -define(STATUS_BAR,     520).
 -define(INPUT_SIZER,    530).
 -define(LEFT_NOTEBOOK,  540).
@@ -62,10 +68,16 @@
 -define(TRACE_TEXT,     550).
 -define(ROLL_LOG_TEXT,  551).
 
+
 -define(ROLL_SEND_ID_TEXT,  560).
 -define(ROLL_SPAWN_ID_TEXT, 561).
 -define(ROLL_REC_ID_TEXT,   562).
 -define(ROLL_VAR_ID_TEXT,   563).
+
+-define(REPLAY_SEND_ID_TEXT,  570).
+-define(REPLAY_SPAWN_ID_TEXT, 571).
+-define(REPLAY_REC_ID_TEXT,   572).
+-define(REPLAY_VAR_ID_TEXT,   573).
 
 -define(PAGEPOS_CODE,  0).
 -define(PAGEPOS_STATE, 1).

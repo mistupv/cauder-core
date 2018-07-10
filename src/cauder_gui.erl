@@ -146,10 +146,12 @@ setupRightSizer(Parent) ->
   ref_add(?RIGHT_NOTEBOOK, Notebook),
   ref_add(?RBOT_NOTEBOOK, BottomNotebook),
   ManuPanel = setupManualPanel(Notebook),
-  AutoPanel = setupAutoPanel(Notebook),
+  % AutoPanel = setupAutoPanel(Notebook),
+  ReplayPanel = setupReplayPanel(Notebook),
   RollPanel = setupRollPanel(Notebook),
   wxNotebook:addPage(Notebook, ManuPanel, "Manual"),
-  wxNotebook:addPage(Notebook, AutoPanel, "Automatic"),
+  % wxNotebook:addPage(Notebook, AutoPanel, "Automatic"),
+  wxNotebook:addPage(Notebook, ReplayPanel, "Replay"),
   wxNotebook:addPage(Notebook, RollPanel, "Rollback"),
   % wxNotebook:layout(Notebook),
   TracePanel = setupTracePanel(BottomNotebook),
@@ -265,6 +267,111 @@ setupAutoPanel(Parent) ->
   wxSizer:add(BorderSizer, AutoSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
   wxWindow:setSizer(AutoPanel, BorderSizer),
   AutoPanel.
+
+setupReplayPanel(Parent) ->
+  ReplayPanel = wxPanel:new(Parent),
+  ReplayPidStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Pid:"),
+  ReplayStepStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Steps:"),
+  ReplaySpawnIdStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Pid:"),
+  ReplaySendIdStaticText  = wxStaticText:new(ReplayPanel, ?wxID_ANY, "MsgId:"),
+  ReplayRecIdStaticText   = wxStaticText:new(ReplayPanel, ?wxID_ANY, "MsgId:"),
+  ReplayVarIdStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Name:"),
+
+  ReplayPidTextCtrl = wxTextCtrl:new(ReplayPanel, ?REPLAY_PID_TEXT, [{style,?wxBOTTOM},
+                                                               {size, {40, -1}}]),
+  ReplayStepTextCtrl = wxTextCtrl:new(ReplayPanel, ?REPLAY_STEP_TEXT, [{style,?wxBOTTOM},
+                                                                 {size, {40, -1}}]),
+  ReplaySpawnIdText = wxTextCtrl:new(ReplayPanel, ?REPLAY_SPAWN_ID_TEXT, [{style, ?wxBOTTOM},
+                                                                    {size, {40, -1}}]),
+  ReplaySendIdText  = wxTextCtrl:new(ReplayPanel, ?REPLAY_SEND_ID_TEXT, [{style, ?wxBOTTOM},
+                                                                  {size, {40, -1}}]),
+  ReplayRecIdText   = wxTextCtrl:new(ReplayPanel, ?REPLAY_REC_ID_TEXT, [{style, ?wxBOTTOM},
+                                                                {size, {40, -1}}]),
+  ReplayVarIdText   = wxTextCtrl:new(ReplayPanel, ?REPLAY_VAR_ID_TEXT, [{style, ?wxBOTTOM},
+                                                                  {size, {80, -1}}]),
+
+  ref_add(?REPLAY_PID_TEXT, ReplayPidTextCtrl),
+  ref_add(?REPLAY_STEP_TEXT, ReplayStepTextCtrl),
+  ref_add(?REPLAY_SPAWN_ID_TEXT, ReplaySpawnIdText),
+  ref_add(?REPLAY_SEND_ID_TEXT, ReplaySendIdText),
+  ref_add(?REPLAY_REC_ID_TEXT, ReplayRecIdText),
+  ref_add(?REPLAY_VAR_ID_TEXT, ReplayVarIdText),
+
+  ReplayButton = wxButton:new(ReplayPanel, ?REPLAY_BUTTON,
+                                [{label, "Replay"},
+                                 {size, {85, -1}}]),
+  ReplaySpawnButton = wxButton:new(ReplayPanel, ?REPLAY_SPAWN_BUTTON,
+                               [{label, "Replay spawn"},
+                                {size, {85, -1}}]),
+  ReplaySendButton = wxButton:new(ReplayPanel, ?REPLAY_SEND_BUTTON,
+                               [{label, "Replay send"},
+                                {size, {85, -1}}]),
+  ReplayRecButton = wxButton:new(ReplayPanel, ?REPLAY_REC_BUTTON,
+                               [{label, "Replay rec"},
+                                {size, {85, -1}}]),
+  ReplayVarButton = wxButton:new(ReplayPanel, ?REPLAY_VAR_BUTTON,
+                               [{label, "Replay var"},
+                                {size, {85, -1}}]),
+  wxButton:disable(ReplayButton),
+  wxButton:disable(ReplaySpawnButton),
+  wxButton:disable(ReplaySendButton),
+  wxButton:disable(ReplayRecButton),
+  wxButton:disable(ReplayVarButton),
+  ref_add(?REPLAY_BUTTON, ReplayButton),
+  ref_add(?REPLAY_SPAWN_BUTTON, ReplaySpawnButton),
+  ref_add(?REPLAY_SEND_BUTTON, ReplaySendButton),
+  ref_add(?REPLAY_REC_BUTTON, ReplayRecButton),
+  ref_add(?REPLAY_VAR_BUTTON, ReplayVarButton),
+
+  ReplaySizer = wxBoxSizer:new(?wxVERTICAL),
+  ReplayNSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  ReplaySpawnSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  ReplaySendSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  ReplayRecSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  ReplayVarSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  BorderSizer = wxBoxSizer:new(?wxVERTICAL),
+
+  wxSizer:add(ReplayNSizer, ReplayPidStaticText),
+  wxSizer:add(ReplayNSizer, ReplayPidTextCtrl),
+  wxSizer:addSpacer(ReplayNSizer, 5),
+  wxSizer:add(ReplayNSizer, ReplayStepStaticText),
+  wxSizer:add(ReplayNSizer, ReplayStepTextCtrl),
+  wxSizer:addSpacer(ReplayNSizer, 5),
+  wxSizer:add(ReplayNSizer, ReplayButton),
+
+  wxSizer:add(ReplaySizer, ReplayNSizer, [{flag, ?wxALIGN_RIGHT}]),
+  wxSizer:addSpacer(ReplaySizer, 10),
+  wxSizer:add(ReplaySizer, ReplaySpawnSizer, [{flag, ?wxALIGN_RIGHT}]),
+  wxSizer:addSpacer(ReplaySizer, 10),
+  wxSizer:add(ReplaySizer, ReplaySendSizer, [{flag, ?wxALIGN_RIGHT}]),
+  wxSizer:addSpacer(ReplaySizer, 10),
+  wxSizer:add(ReplaySizer, ReplayRecSizer, [{flag, ?wxALIGN_RIGHT}]),
+  wxSizer:addSpacer(ReplaySizer, 10),
+  wxSizer:add(ReplaySizer, ReplayVarSizer, [{flag, ?wxALIGN_RIGHT}]),
+
+  wxSizer:add(ReplaySpawnSizer, ReplaySpawnIdStaticText),
+  wxSizer:add(ReplaySpawnSizer, ReplaySpawnIdText),
+  wxSizer:addSpacer(ReplaySpawnSizer, 5),
+  wxSizer:add(ReplaySpawnSizer, ReplaySpawnButton),
+
+  wxSizer:add(ReplaySendSizer, ReplaySendIdStaticText),
+  wxSizer:add(ReplaySendSizer, ReplaySendIdText),
+  wxSizer:addSpacer(ReplaySendSizer, 5),
+  wxSizer:add(ReplaySendSizer, ReplaySendButton),
+
+  wxSizer:add(ReplayRecSizer, ReplayRecIdStaticText),
+  wxSizer:add(ReplayRecSizer, ReplayRecIdText),
+  wxSizer:addSpacer(ReplayRecSizer, 5),
+  wxSizer:add(ReplayRecSizer, ReplayRecButton),
+
+  wxSizer:add(ReplayVarSizer, ReplayVarIdStaticText),
+  wxSizer:add(ReplayVarSizer, ReplayVarIdText),
+  wxSizer:addSpacer(ReplayVarSizer, 5),
+  wxSizer:add(ReplayVarSizer, ReplayVarButton),
+
+  wxSizer:add(BorderSizer, ReplaySizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
+  wxWindow:setSizer(ReplayPanel, BorderSizer),
+  ReplayPanel.
 
 setupRollPanel(Parent) ->
   RollPanel = wxPanel:new(Parent),
@@ -573,13 +680,13 @@ refresh_buttons(Options) ->
       FiltButtons = lists:map(fun utils_gui:option_to_button_label/1, FiltOpts),
       [utils_gui:set_button_label_if(Button, FiltButtons) ||
                                Button <- ManualButtons]
-  end,
-  HasFwdOptions = utils:has_fwd(Options),
-  HasBwdOptions = utils:has_bwd(Options),
-  HasNormOptions = utils:has_norm(Options),
-  utils_gui:set_ref_button_if(?FORWARD_BUTTON, HasFwdOptions),
-  utils_gui:set_ref_button_if(?BACKWARD_BUTTON, HasBwdOptions),
-  utils_gui:set_ref_button_if(?NORMALIZE_BUTTON, HasNormOptions).
+  end.
+  % HasFwdOptions = utils:has_fwd(Options),
+  % HasBwdOptions = utils:has_bwd(Options),
+  % HasNormOptions = utils:has_norm(Options),
+  % utils_gui:set_ref_button_if(?FORWARD_BUTTON, HasFwdOptions),
+  % utils_gui:set_ref_button_if(?BACKWARD_BUTTON, HasBwdOptions),
+  % utils_gui:set_ref_button_if(?NORMALIZE_BUTTON, HasNormOptions).
 
 refresh(RefState) ->
   case utils_gui:is_app_running() of
@@ -640,6 +747,24 @@ eval_norm() ->
   {NewSystem, StepsDone} = cauder:eval_norm(System),
   ref_add(?SYSTEM, NewSystem),
   StepsDone.
+
+eval_replay() ->
+  System = ref_lookup(?SYSTEM),
+  PidTextCtrl = ref_lookup(?REPLAY_PID_TEXT),
+  PidText = wxTextCtrl:getValue(PidTextCtrl),
+  StepTextCtrl = ref_lookup(?REPLAY_STEP_TEXT),
+  StepText = wxTextCtrl:getValue(StepTextCtrl),
+  {Pid, _} = string:to_integer(PidText),
+  {Steps, _} = string:to_integer(StepText),
+  case {Pid, Steps} of
+    {error, _} -> {false, 0, 0};
+    {_, error} -> {false, 0, 0};
+    _ ->
+      CorePid = cerl:c_int(Pid),
+      {NewSystem, StepsDone} = cauder:eval_replay(System, CorePid, Steps),
+      ref_add(?SYSTEM, NewSystem),
+      {StepsDone, Steps}
+  end.
 
 eval_roll() ->
   System = ref_lookup(?SYSTEM),
@@ -730,17 +855,23 @@ focus_roll_log(true) ->
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
-        #wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-          utils_gui:disable_all_buttons(),
-          StepsDone = eval_norm(),
-          utils_gui:sttext_norm(StepsDone),
-          refresh(true),
-          loop();
+        % #wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+        %   utils_gui:disable_all_buttons(),
+        %   StepsDone = eval_norm(),
+        %   utils_gui:sttext_norm(StepsDone),
+        %   refresh(true),
+        %   loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           {MustFocus, StepsDone, TotalSteps} = eval_roll(),
           utils_gui:sttext_roll(StepsDone, TotalSteps),
           focus_roll_log(MustFocus),
+          refresh(true),
+          loop();
+        #wx{id = ?REPLAY_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          utils_gui:disable_all_buttons(),
+          {StepsDone, TotalSteps} = eval_replay(),
+          % utils_gui:sttext_roll(StepsDone, TotalSteps),
           refresh(true),
           loop();
         #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
@@ -750,17 +881,17 @@ loop() ->
           utils_gui:sttext_single(RuleButton),
           refresh(true),
           loop();
-        #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
-          when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
-          utils_gui:disable_all_buttons(),
-          case eval_mult(RuleButton) of
-            error ->
-              utils_gui:update_status_text(?ERROR_NUM_STEP);
-            {StepsDone, TotalSteps} ->
-              utils_gui:sttext_mult(StepsDone, TotalSteps)
-          end,
-          refresh(true),
-          loop();
+        % #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
+        %   when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
+        %   utils_gui:disable_all_buttons(),
+        %   case eval_mult(RuleButton) of
+        %     error ->
+        %       utils_gui:update_status_text(?ERROR_NUM_STEP);
+        %     {StepsDone, TotalSteps} ->
+        %       utils_gui:sttext_mult(StepsDone, TotalSteps)
+        %   end,
+        %   refresh(true),
+        %   loop();
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           {HasRolled, SendId, MustFocus} = eval_roll_send(),
