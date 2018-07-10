@@ -127,12 +127,8 @@ eval_proc_opt(RestSystem, CurProc) ->
               [] -> ?RULE_SPAWN;
               _  -> ?NULL_RULE
             end;
-          {rec,_,_, ConsMsg, OldMail} ->
-            % case utils:is_queue_minus_msg(OldMail, ConsMsg, Mail) of
-              % true -> ?RULE_RECEIVE;
-              % false -> ?NULL_RULE
-              ?NULL_RULE
-            % end
+          {rec,_,_, ConsMsg} ->
+              ?RULE_RECEIVE
         end
     end,
   case Rule of
