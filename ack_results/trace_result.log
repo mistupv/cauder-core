@@ -1,0 +1,6 @@
+call "acknowledge:main()"
+comp "examples/acknowledge.erl" 140674
+main_pid 71
+tracing success
+result ok
+exec 123837
