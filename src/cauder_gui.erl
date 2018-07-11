@@ -800,8 +800,6 @@ eval_roll() ->
       {FocusLog, StepsDone, Steps}
   end.
 
-
-
 eval_replay_spawn() ->
   System = ref_lookup(?SYSTEM),
   IdTextCtrl = ref_lookup(?REPLAY_SPAWN_ID_TEXT),
@@ -912,12 +910,6 @@ focus_roll_log(true) ->
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
-        % #wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
-        %   utils_gui:disable_all_buttons(),
-        %   StepsDone = eval_norm(),
-        %   utils_gui:sttext_norm(StepsDone),
-        %   refresh(true),
-        %   loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           {MustFocus, StepsDone, TotalSteps} = eval_roll(),
@@ -938,17 +930,6 @@ loop() ->
           utils_gui:sttext_single(RuleButton),
           refresh(true),
           loop();
-        % #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
-        %   when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
-        %   utils_gui:disable_all_buttons(),
-        %   case eval_mult(RuleButton) of
-        %     error ->
-        %       utils_gui:update_status_text(?ERROR_NUM_STEP);
-        %     {StepsDone, TotalSteps} ->
-        %       utils_gui:sttext_mult(StepsDone, TotalSteps)
-        %   end,
-        %   refresh(true),
-        %   loop();
         #wx{id = ?REPLAY_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           eval_replay_spawn(),
