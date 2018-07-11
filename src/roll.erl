@@ -45,24 +45,17 @@ eval_step(System, Pid) ->
       cauder:eval_step(System, hd(RollOpts))
   end.
 
-roll_send(System, Pid, OtherPid, Time) ->
+roll_send(System, Pid, OtherPid, Id) ->
+  NewSystem =
+    case can_roll_rec(System, Id) of
+      true ->
+        eval_roll_rec(System, Id);
+      false ->
+        System
+  end,
   SendOpts = lists:filter(fun (X) -> X#opt.rule == ?RULE_SEND end,
-                          roll_opts(System, Pid)),
-  case SendOpts of
-    [] ->
-      SchedOpts = [ X || X <- roll_sched_opts(System, OtherPid),
-                              X#opt.id == Time],
-      case SchedOpts of
-        [] ->
-          NewSystem = eval_step(System, OtherPid),
-          roll_send(NewSystem, Pid, OtherPid, Time);
-        _ ->
-          NewSystem = cauder:eval_step(System, hd(SchedOpts)),
-          roll_send(NewSystem, Pid, OtherPid, Time)
-      end;
-    _ ->
-      cauder:eval_step(System, hd(SendOpts))
-  end.
+                          roll_opts(NewSystem, Pid)),
+  cauder:eval_step(NewSystem, hd(SendOpts)).
 
 roll_spawn(System, Pid, OtherPid) ->
   SpawnOpts = lists:filter(fun (X) -> X#opt.rule == ?RULE_SPAWN end,
@@ -140,7 +133,7 @@ eval_roll_until_send(System, Pid, Id) ->
   {Proc, _} = utils:select_proc(Procs, Pid),
   [CurHist|_]= Proc#proc.hist,
   case CurHist of
-    {send,_,_,_,{_, Id}} ->
+    {send, _, _, _, {_, Id}} ->
       eval_step(System, Pid);
     _ ->
       NewSystem = eval_step(System, Pid),
@@ -164,7 +157,7 @@ eval_roll_until_rec(System, Pid, Id) ->
   {Proc, _} = utils:select_proc(Procs, Pid),
   [CurHist|_]= Proc#proc.hist,
   case CurHist of
-    {rec,_,_, {_, Id},_} ->
+    {rec, _, _, #msg{time = Id}} ->
       eval_roll_after_rec(System, Pid, Id);
     _ ->
       NewSystem = eval_step(System, Pid),
@@ -177,7 +170,7 @@ eval_roll_after_rec(System, Pid, Id) ->
   {Proc, _} = utils:select_proc(Procs, Pid),
   [CurHist|_]= Proc#proc.hist,
   case CurHist of
-    {rec,_,_, {_, Id},_} ->
+    {rec, _, _, #msg{time = Id}} ->
       eval_roll_after_rec(NewSystem, Pid, Id);
     _ ->
       NewSystem
@@ -197,15 +190,9 @@ eval_roll_until_var(System, Pid, Id) ->
 
 roll_opts(System, Pid) ->
   ProcOpts = roll_procs_opts(System, Pid),
-  SchedOpts = roll_sched_opts(System, Pid),
-  SchedOpts ++ ProcOpts.
+  ProcOpts.
 
 roll_procs_opts(System, Pid) ->
   ProcOpts = bwd_sem:eval_procs_opts(System),
   utils:filter_options(ProcOpts, cerl:concrete(Pid)).
 
-roll_sched_opts(System, Pid) ->
-  #sys{procs = Procs} = System,
-  {Proc, _} = utils:select_proc(Procs, Pid),
-  SingleProcSys = #sys{procs = [Proc]},
-  bwd_sem:eval_sched_opts(SingleProcSys).

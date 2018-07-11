@@ -843,7 +843,7 @@ eval_replay_rec() ->
 
 eval_roll_send() ->
   System = ref_lookup(?SYSTEM),
-  IdTextCtrl = ref_lookup(?REPLAY_SEND_ID_TEXT),
+  IdTextCtrl = ref_lookup(?ROLL_SEND_ID_TEXT),
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   {Id, _} = string:to_integer(IdText),
   case Id of

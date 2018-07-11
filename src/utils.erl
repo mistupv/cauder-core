@@ -626,7 +626,7 @@ topmost_rec([CurHist|RestHist]) ->
   end.
 
 has_send([], _) -> false;
-has_send([{send,_,_,_,{_,Time}}|_], Time) -> true;
+has_send([{send, _, _, _, {_, Time}}|_], Time) -> true;
 has_send([_|RestHist], Time) -> has_send(RestHist, Time).
 
 has_spawn([], _) -> false;
@@ -634,7 +634,7 @@ has_spawn([{spawn,_,_,Pid}|_], Pid) -> true;
 has_spawn([_|RestHist], Pid) -> has_spawn(RestHist, Pid).
 
 has_rec([], _) -> false;
-has_rec([{rec,_,_, {_, Time},_}|_], Time) -> true;
+has_rec([{rec, Env, Exp, #msg{time = Time}}|_], Time) -> true;
 has_rec([_|RestHist], Time) -> has_rec(RestHist, Time).
 
 has_var(Env, Var) ->

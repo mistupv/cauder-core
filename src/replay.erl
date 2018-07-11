@@ -29,7 +29,6 @@ eval_step(System, Pid) ->
         Request = utils:check_log(Log),
         case Request of
           {'receive', Stamp} ->
-            replay_send(System, Stamp),
             replay_rec(System, Stamp)
         end;
     _  ->
