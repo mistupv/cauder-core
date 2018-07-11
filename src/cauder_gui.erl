@@ -391,7 +391,7 @@ setupMenu() ->
   wxMenuBar:append(MenuBar, Compile, "&Compiler"),
   wxMenuBar:append(MenuBar, Help, "&Help"),
   OpenItem = wxMenu:append(File, ?OPEN,     "Open\tCtrl-O"),
-  ReplayItem = wxMenu:append(File, ?REPLAY, "Replay\tCtrl-R"),
+  ReplayItem = wxMenu:append(File, ?REPLAY, "Load Trace\tCtrl-T"),
   QuitItem = wxMenu:append(File, ?EXIT,     "Quit\tCtrl-Q"),
   ZoomInItem = wxMenu:append(View, ?ZOOM_IN,  "Zoom In\tCtrl-+"),
   ZoomOutItem = wxMenu:append(View, ?ZOOM_OUT, "Zoom Out\tCtrl--"),
