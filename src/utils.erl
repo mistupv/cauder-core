@@ -18,7 +18,8 @@
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
          gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
          extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1,
-         log_token_val/1, add_msg/4, check_log/1]).
+         log_token_val/1, add_msg/4, check_log/1, search_spawn_parent/2,
+         search_msg_sender/2, search_msg_receiver/2]).
 
 -include("cauder.hrl").
 -include_lib("wx/include/wx.hrl").
@@ -135,6 +136,26 @@ check_log([]) ->
 check_log([Item|_]) ->
   Item.
 
+find_item(Procs, Item) ->
+  PidLogPairs = [{P#proc.pid, P#proc.log} || P <- Procs],
+  FiltPids = [Pid || {Pid, Log} <- PidLogPairs, lists:member(Item, Log)],
+  FiltPids.
+
+search_spawn_parent(Procs, Pid) ->
+  Item = {spawn, Pid},
+  ParentPid = find_item(Procs, Item),
+  ParentPid.
+
+search_msg_sender(Procs, Stamp) ->
+  Item = {send, Stamp},
+  SenderPid = find_item(Procs, Item),
+  SenderPid.
+
+search_msg_receiver(Procs, Stamp) ->
+  Item = {'receive', Stamp},
+  SenderPid = find_item(Procs, Item),
+  SenderPid.
+
 %%--------------------------------------------------------------------
 %% @doc Returns the process that contains a message with id Time
 %% from Procs
@@ -175,8 +196,8 @@ select_proc_with_spawn(Procs, Pid) ->
   ProcWithSpawn.
 
 %%--------------------------------------------------------------------
-%% @doc Returns the processes that contain a spawn item in history
-%% with pid Pid
+%% @doc Returns the processes that contain a rec item in history
+%% with time Time
 %% @end
 %%--------------------------------------------------------------------
 select_proc_with_rec(Procs, Time) ->

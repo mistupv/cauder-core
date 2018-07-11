@@ -393,7 +393,7 @@ eval_procs_opts(#sys{msgs = Msgs, procs = [CurProc|RestProcs]}) ->
     ?NOT_EXP ->
       eval_procs_opts(#sys{msgs = Msgs, procs = RestProcs});
     Opt ->
-      [Opt#opt{sem = ?MODULE, type = ?TYPE_PROC, id = cerl:concrete(Pid)}|eval_procs_opts(#sys{procs = RestProcs})]
+      [Opt#opt{sem = ?MODULE, type = ?TYPE_PROC, id = cerl:concrete(Pid)}|eval_procs_opts(#sys{msgs = Msgs, procs = RestProcs})]
   end.
 
 eval_exp_opt(Exp, Env, Log, Msgs) ->

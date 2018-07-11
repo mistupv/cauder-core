@@ -800,9 +800,50 @@ eval_roll() ->
       {FocusLog, StepsDone, Steps}
   end.
 
+
+
+eval_replay_spawn() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?REPLAY_SPAWN_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  {Id, _} = string:to_integer(IdText),
+  case Id of
+    % What if error?
+    error -> {false, ok, false};
+    _ ->
+      NewSystem = cauder:eval_replay_spawn(System, cerl:c_int(Id)),
+      ref_add(?SYSTEM, NewSystem)
+  end.
+
+eval_replay_send() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?REPLAY_SEND_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  {Id, _} = string:to_integer(IdText),
+  case Id of
+    % What if error?
+    error -> {false, ok, false};
+    _ ->
+      NewSystem = cauder:eval_replay_send(System, Id),
+      ref_add(?SYSTEM, NewSystem)
+  end.
+
+eval_replay_rec() ->
+  System = ref_lookup(?SYSTEM),
+  IdTextCtrl = ref_lookup(?REPLAY_REC_ID_TEXT),
+  IdText = wxTextCtrl:getValue(IdTextCtrl),
+  {Id, _} = string:to_integer(IdText),
+  case Id of
+    % What if error?
+    error -> {false, ok, false};
+    _ ->
+      NewSystem = cauder:eval_replay_rec(System, Id),
+      ref_add(?SYSTEM, NewSystem)
+  end.
+
 eval_roll_send() ->
   System = ref_lookup(?SYSTEM),
-  IdTextCtrl = ref_lookup(?ROLL_SEND_ID_TEXT),
+  IdTextCtrl = ref_lookup(?REPLAY_SEND_ID_TEXT),
   IdText = wxTextCtrl:getValue(IdTextCtrl),
   {Id, _} = string:to_integer(IdText),
   case Id of
@@ -908,6 +949,21 @@ loop() ->
         %   end,
         %   refresh(true),
         %   loop();
+        #wx{id = ?REPLAY_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          utils_gui:disable_all_buttons(),
+          eval_replay_spawn(),
+          refresh(true),
+          loop();
+        #wx{id = ?REPLAY_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          utils_gui:disable_all_buttons(),
+          eval_replay_send(),
+          refresh(true),
+          loop();
+        #wx{id = ?REPLAY_REC_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          utils_gui:disable_all_buttons(),
+          eval_replay_rec(),
+          refresh(true),
+          loop();
         #wx{id = ?ROLL_SEND_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           {HasRolled, SendId, MustFocus} = eval_roll_send(),

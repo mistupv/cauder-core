@@ -10,7 +10,8 @@
          start_refs/1, stop_refs/0,
          eval_opts/1, eval_step/2, eval_mult/3, eval_norm/1,
          eval_roll/3, eval_roll_send/2, eval_roll_spawn/2,
-         eval_roll_rec/2, eval_roll_var/2, eval_replay/3]).
+         eval_roll_rec/2, eval_roll_var/2, eval_replay/3,
+         eval_replay_spawn/2, eval_replay_send/2, eval_replay_rec/2]).
 
 -include("cauder.hrl").
 
@@ -131,6 +132,33 @@ eval_roll_1(System, Pid, Steps, StepsDone) ->
     true ->
       NewSystem = roll:eval_step(System, Pid),
       eval_roll_1(NewSystem, Pid, Steps, StepsDone + 1)
+  end.
+
+eval_replay_spawn(System, Id) ->
+  case replay:can_replay_spawn(System, Id) of
+    false ->
+      System;
+    true ->
+      ReplayedSystem = replay:replay_spawn(System, Id),
+      ReplayedSystem
+  end.
+
+eval_replay_send(System, Id) ->
+  case replay:can_replay_send(System, Id) of
+    false ->
+      System;
+    true ->
+      ReplayedSystem = replay:replay_send(System, Id),
+      ReplayedSystem
+  end.
+
+eval_replay_rec(System, Id) ->
+  case replay:can_replay_rec(System, Id) of
+    false ->
+      System;
+    true ->
+      ReplaySystem = replay:replay_rec(System, Id),
+      ReplaySystem
   end.
 
 eval_roll_send(System, Id) ->
