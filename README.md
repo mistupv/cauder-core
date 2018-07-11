@@ -28,11 +28,11 @@ To prepare a program for replay debugging, only two steps are needed:
 Note that a _trace folder_ is required for replay debugging, which contains both general data about the trace (in `trace_result.log`) and distributed data about each process trace (i.e., their concurrent actions).
 
 There are 3 panels (modes) for replay debugging an execution on the right side of the interface:
- * *Manual:* Type a pid in the textbox and use the buttons for going forward and backward in its execution. Note that this mode is not automatic, and some processes can be blocked due to non-
- * *Replay:* Type the required data (pid or message ids) for replaying _N steps_ in a single process, the spawning of a process, and the sending or receiving of a message. This mode is automatic, thus if you want to replay the receiving of a message (e.g., receiving the message with id `2`), all required actions for performing this receiving will be executed previously.
-* *Rollback:* Type the required data (pid or message ids) for undoing _N steps_ in a single process, the spawning of a process, and the sending or receiving of a message. This mode is automatic, thus if you want to roll back the sending of a message (e.g., sending the message with id `2`), all required actions for rolling back this sending will be undone.
+ * **Manual**: Type a pid in the textbox and use the buttons for going forward and backward in its execution. Note that this mode is not automatic, and some processes can be blocked due to non-
+ * **Replay**: Type the required data (pid or message ids) for replaying _N steps_ in a single process, the spawning of a process, and the sending or receiving of a message. This mode is automatic, thus if you want to replay the receiving of a message (e.g., receiving the message with id `2`), all required actions for performing this receiving will be executed previously.
+* **Rollback**: Type the required data (pid or message ids) for undoing _N steps_ in a single process, the spawning of a process, and the sending or receiving of a message. This mode is automatic, thus if you want to roll back the sending of a message (e.g., sending the message with id `2`), all required actions for rolling back this sending will be undone.
 
-###Example
+### Example
 
 Supose we have traced the `proxy_server.erl` program and the trace results are in folder `proxy_server_trace/`.
 
