@@ -61,20 +61,6 @@ setupCodePanel(Parent) ->
                              [{style, ?wxTE_MULTILINE bor ?wxTE_READONLY}]),
   ref_add(?CODE_TEXT,CodeText),
 
-
-  % FundefStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Funs: "),
-  % FunChoice = wxChoice:new(CodePanel, ?wxID_ANY),
-  % ref_add(?FUN_CHOICE,FunChoice),
-  % InputStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Input args: "),
-  % InputTextCtrl = wxTextCtrl:new(CodePanel, ?INPUT_TEXT,
-  %                                [{style, ?wxBOTTOM},
-  %                                 {value, ""}]),
-  % ref_add(?INPUT_TEXT,InputTextCtrl),
-  % StartButton = wxButton:new(CodePanel, ?START_BUTTON,
-  %                            [{label, "START"}]),
-  % ref_add(?START_BUTTON,StartButton),
-  % wxButton:disable(StartButton),
-
   CodeSizer = wxBoxSizer:new(?wxVERTICAL),
   InputSizer = wxBoxSizer:new(?wxHORIZONTAL),
   ref_add(?INPUT_SIZER, InputSizer),
@@ -84,14 +70,6 @@ setupCodePanel(Parent) ->
   wxSizer:add(CodeSizer, CodeText, SizerFlags),
   wxSizer:addSpacer(CodeSizer, 10),
   wxSizer:add(CodeSizer, InputSizer, [{proportion, 0}, {flag, ?wxEXPAND}]),
-
-  % wxSizer:add(InputSizer, FundefStaticText),
-  % wxSizer:add(InputSizer, FunChoice),
-  % wxSizer:addSpacer(InputSizer, 10),
-  % wxSizer:add(InputSizer, InputStaticText),
-  % wxSizer:add(InputSizer, InputTextCtrl, SizerFlags),
-  % wxSizer:addSpacer(InputSizer, 10),
-  % wxSizer:add(InputSizer, StartButton, [{flag, ?wxALIGN_RIGHT}]),
 
   wxSizer:add(BorderSizer, CodeSizer, [{flag, ?wxALL bor ?wxEXPAND},
                                        {proportion, 1}, {border, 10}]),
@@ -146,14 +124,11 @@ setupRightSizer(Parent) ->
   ref_add(?RIGHT_NOTEBOOK, Notebook),
   ref_add(?RBOT_NOTEBOOK, BottomNotebook),
   ManuPanel = setupManualPanel(Notebook),
-  % AutoPanel = setupAutoPanel(Notebook),
   ReplayPanel = setupReplayPanel(Notebook),
   RollPanel = setupRollPanel(Notebook),
   wxNotebook:addPage(Notebook, ManuPanel, "Manual"),
-  % wxNotebook:addPage(Notebook, AutoPanel, "Automatic"),
   wxNotebook:addPage(Notebook, ReplayPanel, "Replay"),
   wxNotebook:addPage(Notebook, RollPanel, "Rollback"),
-  % wxNotebook:layout(Notebook),
   TracePanel = setupTracePanel(BottomNotebook),
   RollLogPanel = setupRollLogPanel(BottomNotebook),
   wxNotebook:addPage(BottomNotebook, TracePanel, "Trace"),
@@ -173,20 +148,13 @@ setupManualPanel(Parent) ->
 
   ForwIntButton = wxButton:new(ManuPanel, ?FORW_INT_BUTTON,
                                [{label, "Seq"}]),
-  % ForwSchButton = wxButton:new(ManuPanel, ?FORW_SCH_BUTTON,
-  %                               [{label, "Sched"}]),
   BackIntButton = wxButton:new(ManuPanel, ?BACK_INT_BUTTON,
                                [{label, "Seq"}]),
-  % BackSchButton = wxButton:new(ManuPanel, ?BACK_SCH_BUTTON,
-  %                               [{label, "Sched"}]),
   wxButton:disable(ForwIntButton),
-  % wxButton:disable(ForwSchButton),
   wxButton:disable(BackIntButton),
-  % wxButton:disable(BackSchButton),
   ref_add(?FORW_INT_BUTTON, ForwIntButton),
-  % ref_add(?FORW_SCH_BUTTON, ForwSchButton),
   ref_add(?BACK_INT_BUTTON, BackIntButton),
-  % ref_add(?BACK_SCH_BUTTON, BackSchButton),
+
 
   ManuSizer = wxBoxSizer:new(?wxVERTICAL),
   ProcSizer = wxBoxSizer:new(?wxHORIZONTAL),
@@ -205,11 +173,7 @@ setupManualPanel(Parent) ->
   wxSizer:add(ProcSizer, PidTextCtrl, [{flag, ?wxCENTRE}]),
   
   wxSizer:add(ForwardSizer, ForwIntButton),
-  % wxSizer:addSpacer(ForwardSizer, 5),
-  % wxSizer:add(ForwardSizer, ForwSchButton),
   wxSizer:add(BackwardSizer, BackIntButton),
-  % wxSizer:addSpacer(BackwardSizer, 5),
-  % wxSizer:add(BackwardSizer, BackSchButton),
 
   wxSizer:add(ButtonSizer, ForwardSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
   wxSizer:addSpacer(ButtonSizer, 5),
@@ -219,55 +183,6 @@ setupManualPanel(Parent) ->
   wxWindow:setSizer(ManuPanel, BorderSizer),
   ManuPanel.
 
-setupAutoPanel(Parent) ->
-  AutoPanel = wxPanel:new(Parent),
-  StepStaticText = wxStaticText:new(AutoPanel, ?wxID_ANY, "Steps:"),
-  StepTextCtrl = wxTextCtrl:new(AutoPanel, ?STEP_TEXT, [{style,?wxBOTTOM}]),
-  ref_add(?STEP_TEXT, StepTextCtrl),
-  HorizontalLine = wxStaticLine:new(AutoPanel, [{style, ?wxLI_HORIZONTAL},
-                                                {size, {200, -1}}]),
-  ForwardButton = wxButton:new(AutoPanel, ?FORWARD_BUTTON,
-                               [{label, "Forward"}]),
-  BackwardButton = wxButton:new(AutoPanel, ?BACKWARD_BUTTON,
-                                [{label, "Backward"}]),
-  NormalizeButton = wxButton:new(AutoPanel, ?NORMALIZE_BUTTON,
-                                [{label, "Normalize"}]),
-
-  wxButton:disable(ForwardButton),
-  wxButton:disable(BackwardButton),
-  wxButton:disable(NormalizeButton),
-  ref_add(?FORWARD_BUTTON, ForwardButton),
-  ref_add(?BACKWARD_BUTTON, BackwardButton),
-  ref_add(?NORMALIZE_BUTTON, NormalizeButton),
-
-  AutoSizer = wxBoxSizer:new(?wxVERTICAL),
-  StepSizer = wxBoxSizer:new(?wxHORIZONTAL),
-  StepButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
-  SchedButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
-  BorderSizer = wxBoxSizer:new(?wxVERTICAL),
-
-  wxSizer:add(AutoSizer, StepSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
-  wxSizer:addSpacer(AutoSizer, 15),
-  wxSizer:add(AutoSizer, StepButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
-  wxSizer:add(AutoSizer, HorizontalLine, [{flag, ?wxTOP bor ?wxBOTTOM},
-                                          {border, 10}]),
-  wxSizer:add(AutoSizer, SchedButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
-
-  wxSizer:add(StepSizer, StepStaticText),
-  wxSizer:add(StepSizer, StepTextCtrl),
-
-  wxSizer:add(StepButtonSizer, ForwardButton),
-  wxSizer:addSpacer(StepButtonSizer, 5),
-  wxSizer:add(StepButtonSizer, BackwardButton),
-
-  wxSizer:add(SchedButtonSizer, NormalizeButton),
-
-
-
-  wxSizer:add(BorderSizer, AutoSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
-  wxWindow:setSizer(AutoPanel, BorderSizer),
-  AutoPanel.
-
 setupReplayPanel(Parent) ->
   ReplayPanel = wxPanel:new(Parent),
   ReplayPidStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Pid:"),
@@ -275,7 +190,6 @@ setupReplayPanel(Parent) ->
   ReplaySpawnIdStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Pid:"),
   ReplaySendIdStaticText  = wxStaticText:new(ReplayPanel, ?wxID_ANY, "MsgId:"),
   ReplayRecIdStaticText   = wxStaticText:new(ReplayPanel, ?wxID_ANY, "MsgId:"),
-  ReplayVarIdStaticText = wxStaticText:new(ReplayPanel, ?wxID_ANY, "Name:"),
 
   ReplayPidTextCtrl = wxTextCtrl:new(ReplayPanel, ?REPLAY_PID_TEXT, [{style,?wxBOTTOM},
                                                                {size, {40, -1}}]),
@@ -287,15 +201,12 @@ setupReplayPanel(Parent) ->
                                                                   {size, {40, -1}}]),
   ReplayRecIdText   = wxTextCtrl:new(ReplayPanel, ?REPLAY_REC_ID_TEXT, [{style, ?wxBOTTOM},
                                                                 {size, {40, -1}}]),
-  ReplayVarIdText   = wxTextCtrl:new(ReplayPanel, ?REPLAY_VAR_ID_TEXT, [{style, ?wxBOTTOM},
-                                                                  {size, {80, -1}}]),
 
   ref_add(?REPLAY_PID_TEXT, ReplayPidTextCtrl),
   ref_add(?REPLAY_STEP_TEXT, ReplayStepTextCtrl),
   ref_add(?REPLAY_SPAWN_ID_TEXT, ReplaySpawnIdText),
   ref_add(?REPLAY_SEND_ID_TEXT, ReplaySendIdText),
   ref_add(?REPLAY_REC_ID_TEXT, ReplayRecIdText),
-  ref_add(?REPLAY_VAR_ID_TEXT, ReplayVarIdText),
 
   ReplayButton = wxButton:new(ReplayPanel, ?REPLAY_BUTTON,
                                 [{label, "Replay"},
@@ -309,26 +220,20 @@ setupReplayPanel(Parent) ->
   ReplayRecButton = wxButton:new(ReplayPanel, ?REPLAY_REC_BUTTON,
                                [{label, "Replay rec"},
                                 {size, {85, -1}}]),
-  ReplayVarButton = wxButton:new(ReplayPanel, ?REPLAY_VAR_BUTTON,
-                               [{label, "Replay var"},
-                                {size, {85, -1}}]),
   wxButton:disable(ReplayButton),
   wxButton:disable(ReplaySpawnButton),
   wxButton:disable(ReplaySendButton),
   wxButton:disable(ReplayRecButton),
-  wxButton:disable(ReplayVarButton),
   ref_add(?REPLAY_BUTTON, ReplayButton),
   ref_add(?REPLAY_SPAWN_BUTTON, ReplaySpawnButton),
   ref_add(?REPLAY_SEND_BUTTON, ReplaySendButton),
   ref_add(?REPLAY_REC_BUTTON, ReplayRecButton),
-  ref_add(?REPLAY_VAR_BUTTON, ReplayVarButton),
 
   ReplaySizer = wxBoxSizer:new(?wxVERTICAL),
   ReplayNSizer = wxBoxSizer:new(?wxHORIZONTAL),
   ReplaySpawnSizer = wxBoxSizer:new(?wxHORIZONTAL),
   ReplaySendSizer = wxBoxSizer:new(?wxHORIZONTAL),
   ReplayRecSizer = wxBoxSizer:new(?wxHORIZONTAL),
-  ReplayVarSizer = wxBoxSizer:new(?wxHORIZONTAL),
   BorderSizer = wxBoxSizer:new(?wxVERTICAL),
 
   wxSizer:add(ReplayNSizer, ReplayPidStaticText),
@@ -346,8 +251,6 @@ setupReplayPanel(Parent) ->
   wxSizer:add(ReplaySizer, ReplaySendSizer, [{flag, ?wxALIGN_RIGHT}]),
   wxSizer:addSpacer(ReplaySizer, 10),
   wxSizer:add(ReplaySizer, ReplayRecSizer, [{flag, ?wxALIGN_RIGHT}]),
-  wxSizer:addSpacer(ReplaySizer, 10),
-  wxSizer:add(ReplaySizer, ReplayVarSizer, [{flag, ?wxALIGN_RIGHT}]),
 
   wxSizer:add(ReplaySpawnSizer, ReplaySpawnIdStaticText),
   wxSizer:add(ReplaySpawnSizer, ReplaySpawnIdText),
@@ -363,11 +266,6 @@ setupReplayPanel(Parent) ->
   wxSizer:add(ReplayRecSizer, ReplayRecIdText),
   wxSizer:addSpacer(ReplayRecSizer, 5),
   wxSizer:add(ReplayRecSizer, ReplayRecButton),
-
-  wxSizer:add(ReplayVarSizer, ReplayVarIdStaticText),
-  wxSizer:add(ReplayVarSizer, ReplayVarIdText),
-  wxSizer:addSpacer(ReplayVarSizer, 5),
-  wxSizer:add(ReplayVarSizer, ReplayVarButton),
 
   wxSizer:add(BorderSizer, ReplaySizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
   wxWindow:setSizer(ReplayPanel, BorderSizer),
@@ -665,8 +563,8 @@ init_system(Fun, Args, Pid, Log) ->
   NewStatus = Status#status{running = true},
   ref_add(?STATUS, NewStatus).
 
-start(Fun,Args) ->
-  start(Fun, Args, 1, []).
+% start(Fun,Args) ->
+%   start(Fun, Args, 1, []).
 
 start(Fun,Args, Pid, Log) ->
   Status = ref_lookup(?STATUS),
@@ -739,30 +637,6 @@ exec_with(Button) ->
       NewSystem = cauder:eval_step(System, Option),
       ref_add(?SYSTEM, NewSystem)
   end.
-
-eval_mult(Button) ->
-  System = ref_lookup(?SYSTEM),
-  StepTextCtrl = ref_lookup(?STEP_TEXT),
-  StepText = wxTextCtrl:getValue(StepTextCtrl),
-  case string:to_integer(StepText) of
-    {error, _} ->
-      error;
-    {Steps, _} ->
-      Option =
-        case Button of
-          ?FORWARD_BUTTON -> ?MULT_FWD;
-          ?BACKWARD_BUTTON -> ?MULT_BWD
-        end,
-      {NewSystem, StepsDone} = cauder:eval_mult(System, Option, Steps),
-      ref_add(?SYSTEM, NewSystem),
-      {StepsDone, Steps}
-  end.
-
-eval_norm() ->
-  System = ref_lookup(?SYSTEM),
-  {NewSystem, StepsDone} = cauder:eval_norm(System),
-  ref_add(?SYSTEM, NewSystem),
-  StepsDone.
 
 eval_replay() ->
   System = ref_lookup(?SYSTEM),
@@ -919,7 +793,7 @@ loop() ->
           loop();
         #wx{id = ?REPLAY_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
-          {StepsDone, TotalSteps} = eval_replay(),
+          eval_replay(),
           % utils_gui:sttext_roll(StepsDone, TotalSteps),
           refresh(true),
           loop();

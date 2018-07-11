@@ -107,24 +107,14 @@ set_ref_button_if(Ref, Cond) ->
 
 disable_all_buttons() ->
   ForwIntButton   = ref_lookup(?FORW_INT_BUTTON),
-  % ForwSchButton   = ref_lookup(?FORW_SCH_BUTTON),
   BackIntButton   = ref_lookup(?BACK_INT_BUTTON),
-  % BackSchButton   = ref_lookup(?BACK_SCH_BUTTON),
-  % ForwardButton   = ref_lookup(?FORWARD_BUTTON),
-  % BackwardButton  = ref_lookup(?BACKWARD_BUTTON),
-  % NormalizeButton = ref_lookup(?NORMALIZE_BUTTON),
   RollButton      = ref_lookup(?ROLL_BUTTON),
   RollSpawnButton = ref_lookup(?ROLL_SPAWN_BUTTON),
   RollSendButton  = ref_lookup(?ROLL_SEND_BUTTON),
   RollRecButton   = ref_lookup(?ROLL_REC_BUTTON),
   RollVarButton   = ref_lookup(?ROLL_VAR_BUTTON),
   wxButton:disable(ForwIntButton),
-  % wxButton:disable(ForwSchButton),
   wxButton:disable(BackIntButton),
-  % wxButton:disable(BackSchButton),
-  % wxButton:disable(ForwardButton),
-  % wxButton:disable(BackwardButton),
-  % wxButton:disable(NormalizeButton),
   wxButton:disable(RollButton),
   wxButton:disable(RollSpawnButton),
   wxButton:disable(RollSendButton),
@@ -136,7 +126,6 @@ enable_perm_buttons() ->
   ReplaySpawnButton = ref_lookup(?REPLAY_SPAWN_BUTTON),
   ReplaySendButton  = ref_lookup(?REPLAY_SEND_BUTTON),
   ReplayRecButton   = ref_lookup(?REPLAY_REC_BUTTON),
-  ReplayVarButton   = ref_lookup(?REPLAY_VAR_BUTTON),
   RollButton      = ref_lookup(?ROLL_BUTTON),
   RollSpawnButton = ref_lookup(?ROLL_SPAWN_BUTTON),
   RollSendButton  = ref_lookup(?ROLL_SEND_BUTTON),
@@ -146,18 +135,11 @@ enable_perm_buttons() ->
   wxButton:enable(ReplaySpawnButton),
   wxButton:enable(ReplaySendButton),
   wxButton:enable(ReplayRecButton),
-  wxButton:enable(ReplayVarButton),
   wxButton:enable(RollButton),
   wxButton:enable(RollSpawnButton),
   wxButton:enable(RollSendButton),
   wxButton:enable(RollRecButton),
   wxButton:enable(RollVarButton).
-
-% set_choices(Choices) ->
-%   FunChoice = ref_lookup(?FUN_CHOICE),
-%   wxChoice:clear(FunChoice),
-%   [wxChoice:append(FunChoice, Choice) || Choice <- Choices],
-%   wxChoice:setSelection(FunChoice, 0).
 
 clear_texts() ->
   StateText = ref_lookup(?STATE_TEXT),

@@ -634,7 +634,7 @@ has_spawn([{spawn,_,_,Pid}|_], Pid) -> true;
 has_spawn([_|RestHist], Pid) -> has_spawn(RestHist, Pid).
 
 has_rec([], _) -> false;
-has_rec([{rec, Env, Exp, #msg{time = Time}}|_], Time) -> true;
+has_rec([{rec, _, _, #msg{time = Time}}|_], Time) -> true;
 has_rec([_|RestHist], Time) -> has_rec(RestHist, Time).
 
 has_var(Env, Var) ->

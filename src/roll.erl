@@ -45,7 +45,7 @@ eval_step(System, Pid) ->
       cauder:eval_step(System, hd(RollOpts))
   end.
 
-roll_send(System, Pid, OtherPid, Id) ->
+roll_send(System, Pid, _OtherPid, Id) ->
   NewSystem =
     case can_roll_rec(System, Id) of
       true ->
