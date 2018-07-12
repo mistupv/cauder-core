@@ -1,0 +1,6 @@
+call "proxy_server:main()"
+comp "examples/proxy_server.erl" 7245
+main_pid 71
+tracing success
+result ok
+exec 126018

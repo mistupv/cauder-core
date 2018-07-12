@@ -1,0 +1,6 @@
+call "dining:main()"
+comp "examples/dining.erl" 152182
+main_pid 71
+tracing timeout
+result <8054.73.0>
+exec 10001501
