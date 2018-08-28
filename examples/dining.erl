@@ -99,4 +99,4 @@ fork(State) ->
     {set_state, NewState, WaiterPid} ->
       WaiterPid ! {been_set, self()},
       fork(NewState)
-  end. 
+end. 
