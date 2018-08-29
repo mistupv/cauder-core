@@ -13,6 +13,7 @@
 -define(ZOOM_IN,     100).
 -define(ZOOM_OUT,    101).
 -define(TOGGLE_MAIL, 102).
+-define(TOGGLE_LOG,  114).
 -define(TOGGLE_HIST, 103).
 -define(TOGGLE_ENV,  104).
 -define(TOGGLE_EXP,  105).
@@ -100,6 +101,7 @@
 -define(HELP_ZOOM_IN_ITEM,   "Increase text font size").
 -define(HELP_ZOOM_OUT_ITEM,  "Decrease text font size").
 -define(HELP_TOGGLE_MAIL,    "Show or hide process mailboxes").
+-define(HELP_TOGGLE_LOG,    "Show or hide process logs").
 -define(HELP_TOGGLE_HIST,    "Show or hide process histories").
 -define(HELP_TOGGLE_ENV,     "Show or hide process environments").
 -define(HELP_TOGGLE_EXP,     "Show or hide process expressions").
