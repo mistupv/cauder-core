@@ -340,9 +340,10 @@ pp_procs(Procs, Opts) ->
   ProcsList = [pp_proc(Proc, Opts) || Proc <- SortProcs],
   string:join(ProcsList,"\n").
 
-pp_proc(#proc{pid = Pid, hist = Hist, env = Env, exp = Exp, spf = Fun}, Opts) ->
+pp_proc(#proc{pid = Pid, log = Log, hist = Hist, env = Env, exp = Exp, spf = Fun}, Opts) ->
   pp_pre(Pid, Fun) ++
   pp_hist(Hist, Opts) ++
+  pp_log(Log, Opts) ++
   pp_env(Env, Exp, Opts)++
   pp(Exp, Opts).
 
@@ -381,11 +382,28 @@ is_conc_item({send,_,_,_,_}) -> true;
 is_conc_item({rec,_,_,_,_}) -> true;
 is_conc_item(_) -> false.
 
+pp_log(Log, Opts) ->
+  case proplists:get_value(?PRINT_LOG, Opts) of
+    false -> "";
+    true  -> pp_log_1(Log) ++ "\n"
+  end.
+
+pp_log_1(Log) ->
+StrItems = [pp_log_2(Item) || Item <- Log],
+"H : [" ++ string:join(StrItems, ",") ++ "]".
+
 pp_hist(Hist, Opts) ->
   case proplists:get_value(?PRINT_HIST, Opts) of
     false -> "";
     true  -> pp_hist_1(Hist, Opts) ++ "\n"
   end.
+
+pp_log_2({spawn, PidNum}) ->
+  "spawn(" ++ [{?CAUDER_GREEN, integer_to_list(PidNum)}] ++ ")";
+pp_log_2({send,Time}) ->
+  "send(" ++ [{?wxRED, integer_to_list(Time)}] ++ ")";
+pp_log_2({'receive',Time}) ->
+  "rec(" ++ [{?wxBLUE, integer_to_list(Time)}] ++ ")".
 
 pp_hist_1(Hist, Opts) ->
   FiltHist =
