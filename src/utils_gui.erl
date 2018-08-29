@@ -256,6 +256,7 @@ toggle_opts() ->
   MenuView = ref_lookup(?MENU_VIEW),
   MenuComp = ref_lookup(?MENU_COMP),
   [{?PRINT_MAIL,     wxMenu:isChecked(MenuView, ?TOGGLE_MAIL)},
+   {?PRINT_LOG,      wxMenu:isChecked(MenuView, ?TOGGLE_LOG)},
    {?PRINT_HIST,     wxMenu:isChecked(MenuView, ?TOGGLE_HIST)},
    {?PRINT_ENV,      wxMenu:isChecked(MenuView, ?TOGGLE_ENV)},
    {?PRINT_EXP,      wxMenu:isChecked(MenuView, ?TOGGLE_EXP)},
