@@ -390,7 +390,7 @@ pp_log(Log, Opts) ->
 
 pp_log_1(Log) ->
 StrItems = [pp_log_2(Item) || Item <- Log],
-"H : [" ++ string:join(StrItems, ",") ++ "]".
+"LOG : [" ++ string:join(StrItems, ",") ++ "]".
 
 pp_hist(Hist, Opts) ->
   case proplists:get_value(?PRINT_HIST, Opts) of
