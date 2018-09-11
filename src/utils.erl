@@ -379,7 +379,7 @@ pp_pair(Var,Val) ->
 
 is_conc_item({spawn,_,_,_}) -> true;
 is_conc_item({send,_,_,_,_}) -> true;
-is_conc_item({rec,_,_,_,_}) -> true;
+is_conc_item({rec,_,_,_}) -> true;
 is_conc_item(_) -> false.
 
 pp_log(Log, Opts) ->
@@ -422,7 +422,7 @@ pp_hist_2({spawn,_,_,Pid}) ->
   "spawn(" ++ [{?CAUDER_GREEN, pp(Pid)}] ++ ")";
 pp_hist_2({send,_,_,_,{Value, Time}}) ->
   "send(" ++ pp(Value) ++ "," ++ [{?wxRED, integer_to_list(Time)}] ++ ")";
-pp_hist_2({rec,_,_,#msg{val = Value, time = Time},_}) ->
+pp_hist_2({rec,_,_,#msg{val = Value, time = Time}}) ->
   "rec(" ++ pp(Value) ++ "," ++ [{?wxBLUE, integer_to_list(Time)}] ++ ")".
 
 pp(CoreForm, Opts) ->
