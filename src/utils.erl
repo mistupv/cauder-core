@@ -93,7 +93,15 @@ build_var(Num) ->
   cerl:c_var(NumAtom).
 
 build_var(Name,Num) ->
-  NumAtom = list_to_atom(atom_to_list(Name) ++ "_" ++ integer_to_list(Num)),
+  NewName =
+    case Name of
+      UserVarName when is_atom(UserVarName) ->
+        atom_to_list(UserVarName);
+      % Core variable names are just numbers in the last update
+      CoreVarName ->
+        "c" ++ integer_to_list(CoreVarName)
+    end,
+  NumAtom = list_to_atom(NewName ++ "_" ++ integer_to_list(Num)),
   cerl:c_var(NumAtom).
 
 pid_exists(Procs, Pid) ->
