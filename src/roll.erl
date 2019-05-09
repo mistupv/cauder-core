@@ -29,8 +29,8 @@ eval_step(System, Pid) ->
   {Proc, _} = utils:select_proc(Procs, Pid),
   [CurHist|_]= Proc#proc.hist,  
   case CurHist of
-    {send, _, _, DestPid, {_, Time}} ->
-      NewLog = System#sys.roll ++ utils:gen_log_send(Pid, DestPid),
+    {send, _, _, DestPid, {MsgValue, Time}} ->
+      NewLog = System#sys.roll ++ utils:gen_log_send(Pid, DestPid, MsgValue, Time),
       LogSystem = System#sys{roll = NewLog},
       ?LOG("ROLLing back SEND from " ++ ?TO_STRING(cerl:concrete(Pid)) ++ " to " ++ ?TO_STRING(cerl:concrete(DestPid))),
       roll_send(LogSystem, Pid, DestPid, Time);

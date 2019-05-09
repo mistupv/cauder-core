@@ -10,11 +10,13 @@ main() -> Pid=spawn(?MODULE,seatManager,[3]),
 seatManager(NumOfSeats) ->
     receive {askForNum,Pid} ->
 	    Pid!{num,NumOfSeats},seatManager(NumOfSeats);
-	{book,Pid} -> io:format("Booked sit number ~w ~n",[NumOfSeats]),seatManager(NumOfSeats-1)
+	{book,Pid} -> io:format("Booked seat number ~w ~n",[NumOfSeats]),Pid!{booked,NumOfSeats},seatManager(NumOfSeats-1)
     end.
 
 booker(Pid) -> Pid!{askForNum,self()}, 
 	       receive {num,NumOfSeats} when
-			 NumOfSeats > 0 -> Pid!{book,self()}, booker(Pid);
+			 NumOfSeats > 0 -> Pid!{book,self()}, 
+					   receive {booked,N} -> booker(Pid) 
+					   end;
 		   {num,0} -> 0
 	       end.
