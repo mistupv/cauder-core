@@ -357,12 +357,13 @@ matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs, Env) ->
   NewClauses = preprocessing_clauses(Clauses,MsgValue,Env),
   %io:format("matchrec (NewClauses): ~p~n",[NewClauses]),
   case cerl_clauses:reduce(NewClauses, [MsgValue]) of
-    {true, {Clause, Bindings}} ->
+    {true, {Clause, Bindings}} -> 
       ClauseBody = cerl:clause_body(Clause),
       NewMsgs =  AccMsgs ++ RestMsgs,
       {Bindings, ClauseBody, CurMsg, NewMsgs};
-    {false, _} ->
-      matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env)
+    {false, []} -> 
+	  matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env);
+    {false, [Clause|OtherClauses]} -> error("CauDEr: Unsupported pattern")
   end.
 
 preprocessing_clauses(Clauses,Msg,Env) ->

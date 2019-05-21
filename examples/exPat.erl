@@ -1,13 +1,13 @@
 -module(exPat).
--export([ack/1,main/0]).
+-export([ack/2,main/0]).
 
 main() ->
-    {1}!self(),
-    ack(2).
+    self()!{1,2},
+    ack(1,2).
 
-ack(Num) -> 
+ack(N,M) -> 
   receive
-    {Num} ->
+    {N,M} ->
       true;
     _ -> false 
   end. 
