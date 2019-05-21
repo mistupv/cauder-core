@@ -363,7 +363,8 @@ matchrec(Clauses, [CurMsg|RestMsgs], AccMsgs, Env) ->
       {Bindings, ClauseBody, CurMsg, NewMsgs};
     {false, []} -> 
 	  matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env);
-    {false, [Clause|OtherClauses]} -> error("CauDEr: Unsupported pattern")
+      {false, [Clause|OtherClauses]} -> io:format("CauDEr: Unsupported pattern, some behaviours may be missed ~n~w~n",[Clause]),
+			matchrec(Clauses, RestMsgs, AccMsgs ++ [CurMsg],Env)		
   end.
 
 preprocessing_clauses(Clauses,Msg,Env) ->
