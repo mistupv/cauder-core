@@ -230,20 +230,59 @@ replace_guards(Bindings,Exps) ->
 
   eval_guard(Exp) ->
     case cerl:type(Exp) of
-      call ->
+	call ->
 	    CallArgs = cerl:call_args(Exp),
-        CallModule = cerl:call_module(Exp),
-        CallName = cerl:call_name(Exp),
-        ConcModule = cerl:concrete(CallModule),
-        ConcName = cerl:concrete(CallName),
-        ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
-        ConcExp = apply(ConcModule, ConcName, ConcArgs),
-        StrExp = lists:flatten(io_lib:format("~p", ([ConcExp]))) ++ ".",
-        %%io:format("ConcModule: ~p\nConcName: ~p\nConcArgs: ~p\nConcExp: ~p\nStrExp: ~p\n",[ConcModule,ConcName,ConcArgs,ConcExp,StrExp]),
-        {ok, ParsedExp, _} = erl_scan:string(StrExp),
-        {ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
-        hd([utils:toCore(Expr) || Expr <- TypedExp]);
-      _Other -> Exp
+	    CallModule = cerl:call_module(Exp),
+	    CallName = cerl:call_name(Exp),
+	    ConcModule = cerl:concrete(CallModule),
+	    ConcName = cerl:concrete(CallName),
+	    ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
+	    ConcExp = apply(ConcModule, ConcName, ConcArgs),
+	    StrExp = lists:flatten(io_lib:format("~p", ([ConcExp]))) ++ ".",
+	    %%io:format("ConcModule: ~p\nConcName: ~p\nConcArgs: ~p\nConcExp: ~p\nStrExp: ~p\n",[ConcModule,ConcName,ConcArgs,ConcExp,StrExp]),
+	    {ok, ParsedExp, _} = erl_scan:string(StrExp),
+	    {ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
+	    hd([utils:toCore(Expr) || Expr <- TypedExp]);
+	'let' -> 
+	    %io:format("1)~w~n",[Exp]),
+	    LetArg = cerl:let_arg(Exp),
+	    case is_exp(LetArg) of
+		true ->
+		    NewLetArg=eval_guard(LetArg),
+		    NewExp = cerl:update_c_let(Exp,
+					       cerl:let_vars(Exp),
+					       NewLetArg,
+					       cerl:let_body(Exp)),
+		    eval_guard(NewExp);
+		false ->
+		    LetVars = cerl:let_vars(Exp), 
+		    LetEnv =
+			case cerl:let_arity(Exp) of
+			    1 -> lists:zip(LetVars,[LetArg]);
+			    _ ->
+				FlatLetArg =
+				    case cerl:type(LetArg) of
+					values ->
+					    cerl:values_es(LetArg);
+					_ -> LetArg
+				    end,
+				lists:zip(LetVars,FlatLetArg)
+			end,
+		    NewExp = cerl:let_body(Exp),
+		    %io:format("2)~w~n",[NewExp]),
+		    %io:format("2e)~w~n",[LetEnv]),
+		    SubstExp=utils:replace_all(LetEnv,NewExp),
+		    %io:format("3)~w~n",[SubstExp]),
+		    %StrExp = lists:flatten(io_lib:format("~p", ([SubstExp]))) ++ ".",
+		    %%%io:format("ConcModule: ~p\nConcName: ~p\nConcArgs: ~p\nConcExp: ~p\nStrExp: ~p\n",[ConcModule,ConcName,ConcArgs,ConcExp,StrExp]),
+		    %{ok, ParsedExp, _} = erl_scan:string(StrExp),
+		    %{ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
+		    %TypExpr=hd([utils:toCore(Expr) || Expr <- TypedExp]),
+		    %FinalExp=eval_guard(TypExpr),
+		    %io:format("4)~w~n",[FinalExp]),
+		    eval_guard(SubstExp)
+		end;
+	_Other -> Exp
     end.
 
 %%--------------------------------------------------------------------
