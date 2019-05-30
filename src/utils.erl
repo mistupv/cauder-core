@@ -527,6 +527,8 @@ toCore(Expr) ->
       cerl:c_atom(Atom);
     {integer, _, Int} ->
       cerl:c_int(Int);
+    {op, _, '-',{integer, _, Int}} ->
+      cerl:c_int(-Int);
     {float, _, Float} ->
       cerl:c_float(Float);
     {string, _, String} ->
