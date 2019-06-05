@@ -16,7 +16,7 @@
          filter_options/2, filter_procs_opts/1,
          has_fwd/1, has_bwd/1, has_norm/1, has_var/2,
          is_queue_minus_msg/3, topmost_rec/1, last_msg_rest/1,
-         gen_log_send/2, gen_log_spawn/2, empty_log/1, must_focus_log/1,
+         gen_log_send/4, gen_log_spawn/2, empty_log/1, must_focus_log/1,
          extract_replay_data/1, extract_pid_log_data/2, get_mod_name/1,
          log_token_val/1, add_msg/4, check_log/1, search_spawn_parent/2,
          search_msg_sender/2, search_msg_receiver/2]).
@@ -689,8 +689,8 @@ rel_binds(Env, Exp) ->
                   lists:member(VarName,RelVars)
                 end, Env).
 
-gen_log_send(Pid, OtherPid) ->
-  [["Roll send from ",pp_pid(Pid)," to ",pp_pid(OtherPid)]].
+gen_log_send(Pid, OtherPid, MsgValue, Time) ->
+[["Roll send from ",pp_pid(Pid), " of ",pp(MsgValue), " to ",pp_pid(OtherPid), " (",integer_to_list(Time),")"]].
 
 gen_log_spawn(_Pid, OtherPid) ->
   % [["Roll SPAWN of ",pp_pid(OtherPid)," from ",pp_pid(Pid)]].
