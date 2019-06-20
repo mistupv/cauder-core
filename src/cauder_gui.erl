@@ -124,9 +124,11 @@ setupRightSizer(Parent) ->
   ref_add(?RIGHT_NOTEBOOK, Notebook),
   ref_add(?RBOT_NOTEBOOK, BottomNotebook),
   ManuPanel = setupManualPanel(Notebook),
+  AutoPanel = setupAutoPanel(Notebook),
   ReplayPanel = setupReplayPanel(Notebook),
   RollPanel = setupRollPanel(Notebook),
   wxNotebook:addPage(Notebook, ManuPanel, "Manual"),
+  wxNotebook:addPage(Notebook, AutoPanel, "Automatic"),
   wxNotebook:addPage(Notebook, ReplayPanel, "Replay"),
   wxNotebook:addPage(Notebook, RollPanel, "Rollback"),
   TracePanel = setupTracePanel(BottomNotebook),
@@ -182,6 +184,55 @@ setupManualPanel(Parent) ->
   wxSizer:add(BorderSizer, ManuSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
   wxWindow:setSizer(ManuPanel, BorderSizer),
   ManuPanel.
+
+setupAutoPanel(Parent) ->
+  AutoPanel = wxPanel:new(Parent),
+  StepStaticText = wxStaticText:new(AutoPanel, ?wxID_ANY, "Steps:"),
+  StepTextCtrl = wxTextCtrl:new(AutoPanel, ?STEP_TEXT, [{style,?wxBOTTOM}]),
+  ref_add(?STEP_TEXT, StepTextCtrl),
+  HorizontalLine = wxStaticLine:new(AutoPanel, [{style, ?wxLI_HORIZONTAL},
+                                                {size, {200, -1}}]),
+  ForwardButton = wxButton:new(AutoPanel, ?FORWARD_BUTTON,
+                               [{label, "Forward"}]),
+  BackwardButton = wxButton:new(AutoPanel, ?BACKWARD_BUTTON,
+                                [{label, "Backward"}]),
+  NormalizeButton = wxButton:new(AutoPanel, ?NORMALIZE_BUTTON,
+                                [{label, "Normalize"}]),
+
+  wxButton:disable(ForwardButton),
+  wxButton:disable(BackwardButton),
+  wxButton:disable(NormalizeButton),
+  ref_add(?FORWARD_BUTTON, ForwardButton),
+  ref_add(?BACKWARD_BUTTON, BackwardButton),
+  ref_add(?NORMALIZE_BUTTON, NormalizeButton),
+
+  AutoSizer = wxBoxSizer:new(?wxVERTICAL),
+  StepSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  StepButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  SchedButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
+  BorderSizer = wxBoxSizer:new(?wxVERTICAL),
+
+  wxSizer:add(AutoSizer, StepSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+  wxSizer:addSpacer(AutoSizer, 15),
+  wxSizer:add(AutoSizer, StepButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+  wxSizer:add(AutoSizer, HorizontalLine, [{flag, ?wxTOP bor ?wxBOTTOM},
+                                          {border, 10}]),
+  wxSizer:add(AutoSizer, SchedButtonSizer, [{flag, ?wxALIGN_CENTER_HORIZONTAL}]),
+
+  wxSizer:add(StepSizer, StepStaticText),
+  wxSizer:add(StepSizer, StepTextCtrl),
+
+  wxSizer:add(StepButtonSizer, ForwardButton),
+  wxSizer:addSpacer(StepButtonSizer, 5),
+  wxSizer:add(StepButtonSizer, BackwardButton),
+
+  wxSizer:add(SchedButtonSizer, NormalizeButton),
+
+
+
+  wxSizer:add(BorderSizer, AutoSizer, [{flag, ?wxALL bor ?wxALIGN_CENTER_HORIZONTAL}, {border, 10}]),
+  wxWindow:setSizer(AutoPanel, BorderSizer),
+  AutoPanel.
 
 setupReplayPanel(Parent) ->
   ReplayPanel = wxPanel:new(Parent),
@@ -597,13 +648,13 @@ refresh_buttons(Options) ->
       FiltButtons = lists:map(fun utils_gui:option_to_button_label/1, FiltOpts),
       [utils_gui:set_button_label_if(Button, FiltButtons) ||
                                Button <- ManualButtons]
-  end.
-  % HasFwdOptions = utils:has_fwd(Options),
-  % HasBwdOptions = utils:has_bwd(Options),
-  % HasNormOptions = utils:has_norm(Options),
-  % utils_gui:set_ref_button_if(?FORWARD_BUTTON, HasFwdOptions),
-  % utils_gui:set_ref_button_if(?BACKWARD_BUTTON, HasBwdOptions),
-  % utils_gui:set_ref_button_if(?NORMALIZE_BUTTON, HasNormOptions).
+  end,
+  HasFwdOptions = utils:has_fwd(Options),
+  HasBwdOptions = utils:has_bwd(Options),
+  HasNormOptions = utils:has_norm(Options),
+  utils_gui:set_ref_button_if(?FORWARD_BUTTON, HasFwdOptions),
+  utils_gui:set_ref_button_if(?BACKWARD_BUTTON, HasBwdOptions),
+  utils_gui:set_ref_button_if(?NORMALIZE_BUTTON, HasNormOptions).
 
 refresh(RefState) ->
   case utils_gui:is_app_running() of
@@ -641,6 +692,24 @@ exec_with(Button) ->
       ref_add(?SYSTEM, NewSystem)
   end.
 
+eval_mult(Button) ->
+  System = ref_lookup(?SYSTEM),
+  StepTextCtrl = ref_lookup(?STEP_TEXT),
+  StepText = wxTextCtrl:getValue(StepTextCtrl),
+  case string:to_integer(StepText) of
+    {error, _} ->
+      error;
+    {Steps, _} ->
+      Option =
+        case Button of
+          ?FORWARD_BUTTON -> ?MULT_FWD;
+          ?BACKWARD_BUTTON -> ?MULT_BWD
+        end,
+      {NewSystem, StepsDone} = cauder:eval_mult(System, Option, Steps),
+      ref_add(?SYSTEM, NewSystem),
+      {StepsDone, Steps}
+  end.
+
 eval_replay() ->
   System = ref_lookup(?SYSTEM),
   PidTextCtrl = ref_lookup(?REPLAY_PID_TEXT),
@@ -658,6 +727,12 @@ eval_replay() ->
       ref_add(?SYSTEM, NewSystem),
       {StepsDone, Steps}
   end.
+
+eval_norm() ->
+  System = ref_lookup(?SYSTEM),
+  {NewSystem, StepsDone} = cauder:eval_norm(System),
+  ref_add(?SYSTEM, NewSystem),
+  StepsDone.
 
 eval_roll() ->
   System = ref_lookup(?SYSTEM),
@@ -787,6 +862,12 @@ focus_roll_log(true) ->
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
+	#wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          utils_gui:disable_all_buttons(),
+          StepsDone = eval_norm(),
+          utils_gui:sttext_norm(StepsDone),
+          refresh(true),
+          loop();
         #wx{id = ?ROLL_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           {MustFocus, StepsDone, TotalSteps} = eval_roll(),
@@ -805,6 +886,17 @@ loop() ->
           utils_gui:disable_all_buttons(),
           exec_with(RuleButton),
           utils_gui:sttext_single(RuleButton),
+          refresh(true),
+          loop();
+        #wx{id = RuleButton, event = #wxCommand{type = command_button_clicked}}
+          when (RuleButton == ?FORWARD_BUTTON) or (RuleButton == ?BACKWARD_BUTTON) ->
+          utils_gui:disable_all_buttons(),
+          case eval_mult(RuleButton) of
+            error ->
+              utils_gui:update_status_text(?ERROR_NUM_STEP);
+            {StepsDone, TotalSteps} ->
+              utils_gui:sttext_mult(StepsDone, TotalSteps)
+          end,
           refresh(true),
           loop();
         #wx{id = ?REPLAY_SPAWN_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
