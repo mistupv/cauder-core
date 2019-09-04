@@ -61,6 +61,19 @@ setupCodePanel(Parent) ->
                              [{style, ?wxTE_MULTILINE bor ?wxTE_READONLY}]),
   ref_add(?CODE_TEXT,CodeText),
 
+  FundefStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Funs: "),
+  FunChoice = wxChoice:new(CodePanel, ?wxID_ANY),
+  ref_add(?FUN_CHOICE,FunChoice),
+  InputStaticText = wxStaticText:new(CodePanel, ?wxID_ANY, "Input args: "),
+  InputTextCtrl = wxTextCtrl:new(CodePanel, ?INPUT_TEXT,
+                                 [{style, ?wxBOTTOM},
+                                  {value, ""}]),
+  ref_add(?INPUT_TEXT,InputTextCtrl),
+  StartButton = wxButton:new(CodePanel, ?START_BUTTON,
+                             [{label, "START"}]),
+  ref_add(?START_BUTTON,StartButton),
+  wxButton:disable(StartButton),
+
   CodeSizer = wxBoxSizer:new(?wxVERTICAL),
   InputSizer = wxBoxSizer:new(?wxHORIZONTAL),
   ref_add(?INPUT_SIZER, InputSizer),
@@ -70,6 +83,14 @@ setupCodePanel(Parent) ->
   wxSizer:add(CodeSizer, CodeText, SizerFlags),
   wxSizer:addSpacer(CodeSizer, 10),
   wxSizer:add(CodeSizer, InputSizer, [{proportion, 0}, {flag, ?wxEXPAND}]),
+
+ wxSizer:add(InputSizer, FundefStaticText),
+  wxSizer:add(InputSizer, FunChoice),
+  wxSizer:addSpacer(InputSizer, 10),
+  wxSizer:add(InputSizer, InputStaticText),
+  wxSizer:add(InputSizer, InputTextCtrl, SizerFlags),
+  wxSizer:addSpacer(InputSizer, 10),
+  wxSizer:add(InputSizer, StartButton, [{flag, ?wxALIGN_RIGHT}]),
 
   wxSizer:add(BorderSizer, CodeSizer, [{flag, ?wxALL bor ?wxEXPAND},
                                        {proportion, 1}, {border, 10}]),
@@ -512,18 +533,19 @@ loadFile(File) ->
       ref_add(?STATUS, Status#status{loaded = {true, FunDefs}}),
       LeftNotebook = ref_lookup(?LEFT_NOTEBOOK),
       wxNotebook:setSelection(LeftNotebook, ?PAGEPOS_CODE),
-      % utils_gui:set_choices(utils:moduleNames(CleanCoreForms)),
+      utils_gui:set_choices(utils:moduleNames(CleanCoreForms)),
       utils_gui:disable_all_buttons(),
       utils_gui:clear_texts(),
-      % InputSizer = ref_lookup(?INPUT_SIZER),
-      % wxSizer:layout(InputSizer),
-      % StartButton = ref_lookup(?START_BUTTON),
-      % wxButton:enable(StartButton),
+      InputSizer = ref_lookup(?INPUT_SIZER),
+      wxSizer:layout(InputSizer),
+      StartButton = ref_lookup(?START_BUTTON),
+      wxButton:enable(StartButton),
       wxFrame:setStatusText(Frame, "Loaded file " ++ File);
     _Other ->
       wxFrame:setStatusText(Frame, "Error: Could not compile file " ++ File)
   end.
 
+%add ref_add(?LOGS) yes
 loadReplayData(Path) ->
   utils:extract_replay_data(Path),
   ReplayData = get(replay_data),
@@ -617,8 +639,8 @@ init_system(Fun, Args, Pid, Log) ->
   NewStatus = Status#status{running = true},
   ref_add(?STATUS, NewStatus).
 
-% start(Fun,Args) ->
-%   start(Fun, Args, 1, []).
+start(Fun,Args) ->
+  start(Fun, Args, 1, []).
 
 start(Fun,Args, Pid, Log) ->
   Status = ref_lookup(?STATUS),
@@ -676,6 +698,25 @@ refresh(RefState) ->
       end,
       refresh_buttons(Options),
       utils_gui:enable_perm_buttons()
+  end.
+
+%add ref_add(?LOGS) no
+start() ->
+  InputTextCtrl = ref_lookup(?INPUT_TEXT),
+  InputText = wxTextCtrl:getValue(InputTextCtrl),
+  FunChoice = ref_lookup(?FUN_CHOICE),
+  NumChoice = wxChoice:getSelection(FunChoice),
+  StringChoice = wxChoice:getString(FunChoice, NumChoice),
+  Fun = utils:stringToFunName(StringChoice),
+  Args = utils:stringToCoreArgs(InputText),
+  {_, FunArity} = cerl:var_name(Fun),
+  case FunArity == length(Args) of
+    true ->
+      start(Fun, Args),
+      ?LOG("start fun " ++ StringChoice ++ " with args " ++ InputText);
+    false ->
+      utils_gui:update_status_text(?ERROR_NUM_ARGS),
+      error
   end.
 
 exec_with(Button) ->
@@ -862,6 +903,9 @@ focus_roll_log(true) ->
 loop() ->
     receive
         %% ------------------- Button handlers ------------------- %%
+        #wx{id = ?START_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
+          start(),
+          loop();
 	#wx{id = ?NORMALIZE_BUTTON, event = #wxCommand{type = command_button_clicked}} ->
           utils_gui:disable_all_buttons(),
           StepsDone = eval_norm(),

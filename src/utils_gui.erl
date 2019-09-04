@@ -2,7 +2,7 @@
 -export([is_app_loaded/0, is_app_running/0,
          option_to_button_label/1, button_to_option/1,
          disable_rule_buttons/1, set_button_label_if/2, set_ref_button_if/2,
-         disable_all_buttons/0, enable_perm_buttons/0,
+         set_choices/1, disable_all_buttons/0, enable_perm_buttons/0,
          clear_texts/0, stop_refs/0, update_status_text/1,
          sttext_single/1, sttext_mult/2, sttext_norm/1,
          sttext_roll/2, sttext_roll_send/2, sttext_roll_spawn/2,
@@ -140,6 +140,12 @@ enable_perm_buttons() ->
   wxButton:enable(RollSendButton),
   wxButton:enable(RollRecButton),
   wxButton:enable(RollVarButton).
+
+set_choices(Choices) ->
+  FunChoice = ref_lookup(?FUN_CHOICE),
+  wxChoice:clear(FunChoice),
+  [wxChoice:append(FunChoice, Choice) || Choice <- Choices],
+  wxChoice:setSelection(FunChoice, 0).
 
 clear_texts() ->
   StateText = ref_lookup(?STATE_TEXT),

@@ -63,6 +63,7 @@
 -define(ROLL_STEP_TEXT, 518).
 -define(STATUS_BAR,     520).
 -define(INPUT_SIZER,    530).
+-define(FUN_CHOICE,     531).
 -define(LEFT_NOTEBOOK,  540).
 -define(RIGHT_NOTEBOOK, 541).
 -define(RBOT_NOTEBOOK,  542).
