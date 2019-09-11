@@ -91,11 +91,11 @@ build_var(Num) ->
   NumAtom = list_to_atom("k_" ++ integer_to_list(Num)),
   cerl:c_var(NumAtom).
 
-%%------------ It is not working in Erlang 22
+%%------------ It is not working in Erlang 22-----------------------------
 %%build_var(Name,Num) ->
 %%  NumAtom = list_to_atom(atom_to_list(Name) ++ "_" ++ integer_to_list(Num)),
 %%  cerl:c_var(NumAtom).
-
+%%------------------------------------------------------------------------
 build_var(Name,Num) ->
   NewName =
     case Name of
