@@ -91,8 +91,21 @@ build_var(Num) ->
   NumAtom = list_to_atom("k_" ++ integer_to_list(Num)),
   cerl:c_var(NumAtom).
 
+%%------------ It is not working in Erlang 22
+%%build_var(Name,Num) ->
+%%  NumAtom = list_to_atom(atom_to_list(Name) ++ "_" ++ integer_to_list(Num)),
+%%  cerl:c_var(NumAtom).
+
 build_var(Name,Num) ->
-  NumAtom = list_to_atom(atom_to_list(Name) ++ "_" ++ integer_to_list(Num)),
+  NewName =
+    case Name of
+      UserVarName when is_atom(UserVarName) ->
+        atom_to_list(UserVarName);
+      % Core variable names are just numbers in the last update
+       CoreVarName ->
+         "c" ++ integer_to_list(CoreVarName)
+    end,
+  NumAtom = list_to_atom(NewName ++ "_" ++ integer_to_list(Num)),
   cerl:c_var(NumAtom).
 
 pid_exists(Procs, Pid) ->
@@ -219,10 +232,10 @@ merge_env(Env, [CurBind|RestBind]) ->
 %%--------------------------------------------------------------------
 
 replace_all([],Exp) -> Exp;
-replace_all([{Var,Val}|R],Exp) -> 
+replace_all([{Var,Val}|R],Exp) ->
   %io:format("replace: ~p~n~p~n~p~n",[Var,Val,Exp]),
   NewExp = utils:replace(Var,Val,Exp),
-  %io:format("--result: p~n",[NewExp]),  
+  %io:format("--result: p~n",[NewExp]),
   replace_all(R,NewExp).
 
 
@@ -680,8 +693,8 @@ extract_pid_log_data(Path, Pid) ->
   ReplayProcData.
 
 get_mod_name(Call) ->
-    AExpr = 
-        case is_list(Call) of 
+    AExpr =
+        case is_list(Call) of
             true ->
                 hd(parse_expr(Call++"."));
             false ->
