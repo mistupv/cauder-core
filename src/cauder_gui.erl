@@ -17,7 +17,6 @@ setup_gui() ->
   wxEvtHandler:connect(Frame, close_window),
   wxEvtHandler:connect(Frame, command_button_clicked),
   wxEvtHandler:connect(Frame, command_menu_selected),
-  wxEvtHandler:connect(Frame, command_text_updated),
   setupMainPanel(Frame),
   wxFrame:show(Frame),
   loop(),
@@ -167,6 +166,7 @@ setupManualPanel(Parent) ->
   ManuPanel = wxPanel:new(Parent),
   PidStaticText = wxStaticText:new(ManuPanel, ?wxID_ANY, "Pid"),
   PidTextCtrl = wxTextCtrl:new(ManuPanel, ?PID_TEXT, [{style, ?wxBOTTOM}]),
+  wxTextCtrl:connect(PidTextCtrl, command_text_updated),
   ref_add(?PID_TEXT, PidTextCtrl),
 
   ForwIntButton = wxButton:new(ManuPanel, ?FORW_INT_BUTTON,
@@ -210,6 +210,7 @@ setupAutoPanel(Parent) ->
   AutoPanel = wxPanel:new(Parent),
   StepStaticText = wxStaticText:new(AutoPanel, ?wxID_ANY, "Steps:"),
   StepTextCtrl = wxTextCtrl:new(AutoPanel, ?STEP_TEXT, [{style,?wxBOTTOM}]),
+  wxTextCtrl:connect(StepTextCtrl, command_text_updated),
   ref_add(?STEP_TEXT, StepTextCtrl),
   HorizontalLine = wxStaticLine:new(AutoPanel, [{style, ?wxLI_HORIZONTAL},
                                                 {size, {200, -1}}]),
