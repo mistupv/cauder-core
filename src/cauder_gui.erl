@@ -548,13 +548,19 @@ loadFile(File) ->
 
 %add ref_add(?LOGS) yes
 loadReplayData(Path) ->
-  utils:extract_replay_data(Path),
-  ReplayData = get(replay_data),
-  {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
-  MainPid = ReplayData#replay.main_pid,
-  MainLog = utils:extract_pid_log_data(Path, MainPid),
-  SMainPid = utils:log_token_val(MainPid),
-  start(cerl:c_var({Fun,length(Args)}), Args, SMainPid, MainLog).
+  try
+    utils:extract_replay_data(Path),
+    ReplayData = get(replay_data),
+    {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
+    MainPid = ReplayData#replay.main_pid,
+    MainLog = utils:extract_pid_log_data(Path, MainPid),
+    SMainPid = utils:log_token_val(MainPid),
+    start(cerl:c_var({Fun,length(Args)}), Args, SMainPid, MainLog)
+  catch
+    _:_ ->
+      Frame = ref_lookup(?FRAME),
+      wxFrame:setStatusText(Frame, "Error loading replay data")
+  end.
 
 openDialog(Parent) ->
   Caption = "Select an Erlang file",
