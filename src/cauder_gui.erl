@@ -18,6 +18,7 @@ setup_gui() ->
   wxEvtHandler:connect(Frame, command_button_clicked),
   wxEvtHandler:connect(Frame, command_menu_selected),
   setupMainPanel(Frame),
+  setFont(),
   wxFrame:show(Frame),
   loop(),
   utils_gui:stop_refs(),
@@ -595,16 +596,22 @@ openReplayDialog(Parent) ->
   end,
   wxDialog:destroy(Dialog).
 
+setFont() ->
+  Font = wxFont:new(),
+  wxFont:setFamily(Font, ?wxFONTFAMILY_TELETYPE),
+  wxFont:setPointSize(Font, lists:nth(2, ?FONT_SIZES)),
+  wxTextCtrl:setFont(ref_lookup(?CODE_TEXT), Font),
+  wxTextCtrl:setFont(ref_lookup(?STATE_TEXT), Font).
+
 zoomIn() ->
   CodeText = ref_lookup(?CODE_TEXT),
   StateText = ref_lookup(?STATE_TEXT),
   Font = wxTextCtrl:getFont(CodeText),
   CurFontSize = wxFont:getPointSize(Font),
   NewFontSize = utils_gui:next_font_size(CurFontSize),
-  NewFont = wxFont:new(),
-  wxFont:setPointSize(NewFont, NewFontSize),
-  wxTextCtrl:setFont(CodeText, NewFont),
-  wxTextCtrl:setFont(StateText, NewFont).
+  wxFont:setPointSize(Font, NewFontSize),
+  wxTextCtrl:setFont(CodeText, Font),
+  wxTextCtrl:setFont(StateText, Font).
 
 zoomOut() ->
   CodeText = ref_lookup(?CODE_TEXT),
@@ -612,10 +619,9 @@ zoomOut() ->
   Font = wxTextCtrl:getFont(CodeText),
   CurFontSize = wxFont:getPointSize(Font),
   NewFontSize = utils_gui:prev_font_size(CurFontSize),
-  NewFont = wxFont:new(),
-  wxFont:setPointSize(NewFont, NewFontSize),
-  wxTextCtrl:setFont(CodeText, NewFont),
-  wxTextCtrl:setFont(StateText, NewFont).
+  wxFont:setPointSize(Font, NewFontSize),
+  wxTextCtrl:setFont(CodeText, Font),
+  wxTextCtrl:setFont(StateText, Font).
 
 load_ghosts(ExceptPid) ->
   ReplayData = get(replay_data),
