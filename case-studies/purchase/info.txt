@@ -1,0 +1,6 @@
+Example described in
+
+Elena Giachino, Ivan Lanese, Claudio Antares Mezzina:
+Causal-Consistent Reversible Debugging. FASE 2014: 370-384
+
+in the context of language muOz, here translated into Erlang.

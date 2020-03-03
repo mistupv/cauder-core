@@ -1,0 +1,3 @@
+call "purchase:main()"
+main_pid 63
+result false
