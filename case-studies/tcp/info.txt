@@ -1,0 +1,11 @@
+Example described in
+
+Rafael Caballero, Enrique Martin-Martin, Adrián Riesco, Salvador Tamarit:
+Declarative debugging of concurrent Erlang programs. J. Log. Algebraic Methods Program. 101: 22-41 (2018)
+
+The file tcp.erl contains two bugs, the first one fixed in
+tcp-fixed1.erl and both fixed in tcp-fixed2.erl
+
+Traces exercising the bugs are not currently available (the bugs are
+nondeterministic).
+
