@@ -28,8 +28,15 @@
 %% @end
 %%--------------------------------------------------------------------
 fundef_lookup(FunName, FunDefs) ->
-  {_, FunDef} = lists:keyfind(FunName, 1, FunDefs),
-  FunDef.
+    %io:fwrite("---------------~n"),
+    %io:write(FunName),
+    %io:fwrite("~n---------------~n"),
+    %io:write(FunDefs), 
+    %io:fwrite("~n---------------~n"), 
+  case lists:keyfind(FunName, 1, FunDefs) of
+      {_, FunDef} -> FunDef;
+      false -> io:fwrite("Funzione non trovata", [])
+  end.
 
 %%--------------------------------------------------------------------
 %% @doc Renames all the variables in function definition FunDef

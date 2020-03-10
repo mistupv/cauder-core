@@ -493,8 +493,10 @@ openDialog(Parent) ->
                                           ?wxFD_FILE_MUST_EXIST}]),
   case wxDialog:showModal(Dialog) of
       ?wxID_OK ->
-        File = wxFileDialog:getPaths(Dialog),
-        loadFile(File);
+        File = wxFileDialog:getPath(Dialog),
+        Path = wxFileDialog:getDirectory(Dialog),        
+	ref_add(?LAST_PATH,Path),  
+	loadFile(File);
       _Other -> continue
   end,
   wxDialog:destroy(Dialog).

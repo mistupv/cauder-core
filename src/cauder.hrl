@@ -56,6 +56,8 @@
 
 -define(CAUDER_GREEN, {34,139,34}).
 
+-define(LAST_PATH, last_path).
+
 -record(proc, {pid,
                hist = [],
                log  = [],
