@@ -1,0 +1,3 @@
+call "barber:main()"
+main_pid 74
+result none
