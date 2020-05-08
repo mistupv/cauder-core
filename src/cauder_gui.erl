@@ -396,6 +396,9 @@ setupMenu() ->
   ToggleHist = wxMenu:appendCheckItem(View, ?TOGGLE_HIST, "Toggle Histories"),
   ToggleEnv  = wxMenu:appendCheckItem(View, ?TOGGLE_ENV,  "Toggle Environments"),
   ToggleExp  = wxMenu:appendCheckItem(View, ?TOGGLE_EXP,  "Toggle Expressions"),
+  %%Insert toggle for graphic trace view
+  ToggleViewer=wxMenu:appendCheckItem(View,?TOGGLE_VIEWER,"Toggle Graphic Viewer"),
+  %%
   wxMenu:appendSeparator(View),
   RadioConc  = wxMenu:appendRadioItem(View, ?RADIO_CONC, "Conc. History"),
   RadioFull = wxMenu:appendRadioItem(View, ?RADIO_FULL, "Full History"),
@@ -424,6 +427,9 @@ setupMenu() ->
   wxMenuItem:setHelp(ToggleHist,   ?HELP_TOGGLE_HIST),
   wxMenuItem:setHelp(ToggleEnv,    ?HELP_TOGGLE_ENV),
   wxMenuItem:setHelp(ToggleExp,    ?HELP_TOGGLE_EXP),
+  %%set helper for the toggle viewer
+  wxMenuItem:setHelp(ToggleViewer,    ?HELP_TOGGLE_VIEWER),
+  %%
   wxMenuItem:setHelp(RadioConc,    ?HELP_RADIO_CONC),
   wxMenuItem:setHelp(RadioFull,    ?HELP_RADIO_FULL),
   wxMenuItem:setHelp(RadioRelEnv,  ?HELP_RADIO_REN_ENV),
@@ -875,6 +881,17 @@ loop() ->
         #wx{id = ?TOGGLE_EXP, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
           loop();
+        %%implements the backend behaviuor when press toggle viewer
+        #wx{id = ?TOGGLE_VIEWER, event = #wxCommand{type = command_menu_selected}} ->
+          case whereis(tracer) of% check if the tracer is already active
+              undefined->%if not
+                  Pid=spawn(tracer,init,[]),%%spawn it
+                  register(tracer,Pid);%and register it
+              TracerPid->%if yes
+                  TracerPid ! close% close it
+          end,
+          loop();
+        %%
         #wx{id = ?RADIO_CONC, event = #wxCommand{type = command_menu_selected}} ->
           refresh(true),
           loop();

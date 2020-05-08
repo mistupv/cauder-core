@@ -47,6 +47,9 @@
 -define(PRINT_HIST, print_hist).
 -define(PRINT_ENV,  print_env).
 -define(PRINT_EXP,  print_exp).
+%%define print viewer
+-define(PRINT_VIEWER,  print_viewer).
+%%
 -define(PRINT_FULL, print_full).
 -define(COMP_OPT,   comp_opt).
 -define(PRINT_FULL_ENV, print_full_env).

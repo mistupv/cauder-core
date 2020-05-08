@@ -16,6 +16,9 @@
 -define(TOGGLE_HIST, 103).
 -define(TOGGLE_ENV,  104).
 -define(TOGGLE_EXP,  105).
+%%toggle for the viewer
+-define(TOGGLE_VIEWER,114).
+%%
 -define(RADIO_CONC,  106).
 -define(RADIO_FULL,  107).
 -define(TOGGLE_COMP, 108).
@@ -94,6 +97,9 @@
 -define(HELP_TOGGLE_HIST,    "Show or hide process histories").
 -define(HELP_TOGGLE_ENV,     "Show or hide process environments").
 -define(HELP_TOGGLE_EXP,     "Show or hide process expressions").
+%%define helper for toggle viewer
+-define(HELP_TOGGLE_VIEWER,   "Show or hide the graphic chart of current trace").
+%%
 -define(HELP_RADIO_CONC,     "Show only concurrent history").
 -define(HELP_RADIO_FULL,     "Show complete history").
 -define(HELP_RADIO_REN_ENV,  "Show relevant bindings from environment").

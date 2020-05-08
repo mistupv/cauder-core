@@ -413,6 +413,13 @@ pp_trace(#sys{trace = Trace}) ->
   % Trace is built as a stack (newest item is first)
   % and we must reverse it to print it
   RevTrace = lists:reverse(Trace),
+  %%%TEST POINT OF LUCA'S TOOL INTEGRATION
+  case whereis(tracer) of
+    undefined->ok;
+    TracerPid->
+        TracerPid !{show,RevTrace}
+  end,
+  %%%
   TraceStr = [pp_trace_item(Item) || Item <- RevTrace],
   string:join(TraceStr,"\n").
 
