@@ -28,8 +28,15 @@
 %% @end
 %%--------------------------------------------------------------------
 fundef_lookup(FunName, FunDefs) ->
-  {_, FunDef} = lists:keyfind(FunName, 1, FunDefs),
-  FunDef.
+    %io:fwrite("---------------~n"),
+    %io:write(FunName),
+    %io:fwrite("~n---------------~n"),
+    %io:write(FunDefs), 
+    %io:fwrite("~n---------------~n"), 
+  case lists:keyfind(FunName, 1, FunDefs) of
+      {_, FunDef} -> FunDef;
+      false -> io:fwrite("Funzione non trovata", [])
+  end.
 
 %%--------------------------------------------------------------------
 %% @doc Renames all the variables in function definition FunDef
@@ -406,6 +413,13 @@ pp_trace(#sys{trace = Trace}) ->
   % Trace is built as a stack (newest item is first)
   % and we must reverse it to print it
   RevTrace = lists:reverse(Trace),
+  %%%TEST POINT OF LUCA'S TOOL INTEGRATION
+  case whereis(tracer) of
+    undefined->ok;
+    TracerPid->
+        TracerPid !{show,RevTrace}
+  end,
+  %%%
   TraceStr = [pp_trace_item(Item) || Item <- RevTrace],
   string:join(TraceStr,"\n").
 

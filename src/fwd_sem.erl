@@ -176,16 +176,51 @@ eval_seq_1(Env,Exp) ->
                       NewExp = cerl:c_atom('ok'),
                       {Env, NewExp, tau};
                     _ ->
-                      ConcModule = cerl:concrete(CallModule),
-                      ConcName = cerl:concrete(CallName),
-                      ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
-                      ConcExp = apply(ConcModule, ConcName, ConcArgs),
-                      StrExp = lists:flatten(io_lib:format("~p", ([ConcExp]))) ++ ".",
-                      {ok, ParsedExp, _} = erl_scan:string(StrExp),
-                      {ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
-                      CoreExp = hd([utils:toCore(Expr) || Expr <- TypedExp]),
-                      NewExp = CoreExp,
-                      {Env, NewExp, tau}
+			  ToggleOpts = utils_gui:toggle_opts(),
+			  AddOptimize = proplists:get_value(?COMP_OPT, ToggleOpts),
+			  CompOpts =
+			      case AddOptimize of
+				  true  -> [to_core,binary];
+				  false -> [to_core,binary, no_copt]
+			      end,
+			  Filename = cerl:concrete(CallModule),
+			  Path = ets:lookup_element(?GUI_REF,?LAST_PATH,2),
+			  File = filename:join(Path,Filename),
+			  case compile:file(File, CompOpts) of
+			      {ok, _, CoreForms} ->
+				  NoAttsCoreForms = cerl:update_c_module(CoreForms,
+									 cerl:module_name(CoreForms),
+									 cerl:module_exports(CoreForms),
+									 [],
+									 cerl:module_defs(CoreForms)),
+				  Stripper = fun(Tree) -> cerl:set_ann(Tree, []) end,
+				  CleanCoreForms = cerl_trees:map(Stripper, NoAttsCoreForms),
+				  FunDefs = cerl:module_defs(CleanCoreForms),			  
+				  ConcName = cerl:concrete(CallName),
+				  %ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
+				  %io:fwrite("---------------~n"),
+				  %io:write(CallName),
+				  %io:fwrite("~n---------------~n"),
+				  %FunDef = utils:fundef_lookup(CallName, FunDefs), 
+				  FunDef = utils:fundef_lookup(cerl:c_var({ConcName,cerl:call_arity(Exp)}), FunDefs),
+				  NewFunDef = utils:fundef_rename(FunDef),
+				  FunBody = cerl:fun_body(NewFunDef),
+				  FunArgs = cerl:fun_vars(NewFunDef),
+						% standard zip is used here (pretty-printer forces it)
+				  NewEnv = utils:merge_env(Env, lists:zip(FunArgs,CallArgs)), %ApplyArgs
+				  {NewEnv,FunBody,tau};
+			      error -> %for builtin
+				  ConcModule = cerl:concrete(CallModule), 
+				  ConcName = cerl:concrete(CallName),
+				  ConcArgs = [utils:toErlang(Arg) || Arg <- CallArgs],
+				  ConcExp = apply(ConcModule, ConcName, ConcArgs),
+				  StrExp = lists:flatten(io_lib:format("~p", ([ConcExp]))) ++ ".",
+				  {ok, ParsedExp, _} = erl_scan:string(StrExp),
+				  {ok, TypedExp} = erl_parse:parse_exprs(ParsedExp),
+				  CoreExp = hd([utils:toCore(Expr) || Expr <- TypedExp]),
+				  NewExp = CoreExp,
+				  {Env, NewExp, tau}
+			  end
                   end
               end
           end
