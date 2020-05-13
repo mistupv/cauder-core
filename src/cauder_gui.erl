@@ -477,14 +477,14 @@ loadFile(File) ->
       wxFrame:setStatusText(Frame, "Error: Could not compile file " ++ File)
   end.
 
-loadReplayData(Path) ->
-  utils:extract_replay_data(Path),
-  ReplayData = get(replay_data),
-  {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
-  MainPid = ReplayData#replay.main_pid,
-  MainLog = utils:extract_pid_log_data(Path, MainPid),  
-  start(cerl:c_var({Fun,length(Args)}), Args, MainPid, MainLog),
-  cauder:eval_replay().
+%%loadReplayData(Path) ->
+%%  utils:extract_replay_data(Path),
+%%  ReplayData = get(replay_data),
+%%  {_Mod, Fun, Args} = utils:get_mod_name(ReplayData#replay.call),
+%%  MainPid = ReplayData#replay.main_pid,
+%%  MainLog = utils:extract_pid_log_data(Path, MainPid),  
+%%  start(cerl:c_var({Fun,length(Args)}), Args, MainPid, MainLog),
+%%  cauder:eval_replay().
 
 openDialog(Parent) ->
   Caption = "Select an Erlang file",
@@ -507,19 +507,19 @@ openDialog(Parent) ->
   end,
   wxDialog:destroy(Dialog).
 
-openReplayDialog(Parent) ->
-  Caption = "Select a log folder",
-  DefaultPath = ref_lookup(?FILE_PATH),
-  Dialog = wxDirDialog:new(Parent, [{title, Caption},
-                                    {defaultPath, DefaultPath},
-                                    {style, ?wxDD_DIR_MUST_EXIST}]),
-  case wxDialog:showModal(Dialog) of
-      ?wxID_OK ->
-        Path = wxDirDialog:getPath(Dialog),
-        loadReplayData(Path);
-      _Other -> continue
-  end,
-  wxDialog:destroy(Dialog).
+%%openReplayDialog(Parent) ->
+%%  Caption = "Select a log folder",
+%%  DefaultPath = ref_lookup(?FILE_PATH),
+%%  Dialog = wxDirDialog:new(Parent, [{title, Caption},
+%%                                    {defaultPath, DefaultPath},
+%%                                    {style, ?wxDD_DIR_MUST_EXIST}]),
+%%  case wxDialog:showModal(Dialog) of
+%%      ?wxID_OK ->
+%%        Path = wxDirDialog:getPath(Dialog),
+%%        loadReplayData(Path);
+%%      _Other -> continue
+%%  end,
+%%  wxDialog:destroy(Dialog).
 
 zoomIn() ->
   CodeText = ref_lookup(?CODE_TEXT),

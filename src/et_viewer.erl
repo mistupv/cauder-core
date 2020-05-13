@@ -21,7 +21,7 @@
 %IMPORTANT END
 
 %MyCopyright
-%Copyright [yyyy] [nome del proprietario]
+%Copyright [Ivan Lanese] [Luca Tabanelli]
 
 %Licensed under the Apache License, Version 2.0 (the "License");
 %you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@
 	 stop/1, 
          get_collector_pid/1]).
 
--include("/usr/lib/erlang/lib/et-1.6.4/include/et.hrl").
--include("/usr/lib/erlang/lib/et-1.6.4/src/et_internal.hrl").
+-include("$ROOTDIR/lib/et-1.6.4/include/et.hrl").
+-include("$ROOTDIR/lib/et-1.6.4/src/et_internal.hrl").
 
 -define(unknown, "UNKNOWN").
 
