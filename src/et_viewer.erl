@@ -47,17 +47,9 @@
 	 stop/1, 
          get_collector_pid/1]).
 
-%%		YOU NEED TO MODIFY THIS SUB PATH WITH YOUR FOLDER VERSION OF ET-XX.YY.ZZ	
-%		  	   |
-%			   |
-%			   \/
-%		       ---------
--include("$ROOTDIR/lib/et-1.6.4/include/et.hrl").
--include("$ROOTDIR/lib/et-1.6.4/src/et_internal.hrl").
-%		       ---------
-%			   /\
-%			    |
-%			    |
+-include_lib("et/include/et.hrl").
+-include_lib("et/src/et_internal.hrl").
+
 
 -define(unknown, "UNKNOWN").
 

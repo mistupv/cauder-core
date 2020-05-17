@@ -66,9 +66,8 @@
 -export([init/1, terminate/2, code_change/3,
          handle_call/3, handle_cast/2, handle_info/2]).
 
-
--include("/usr/lib/erlang/lib/et-1.6.4/include/et.hrl").
--include("/usr/lib/erlang/lib/et-1.6.4/src/et_internal.hrl").
+-include_lib("et/include/et.hrl").
+-include_lib("et/src/et_internal.hrl").
 -include_lib("wx/include/wx.hrl").
 
 -define(unknown, "UNKNOWN").
