@@ -445,10 +445,14 @@ handle_info({et, refresh}, S) ->
     noreply(S2);
 %%%%handle a message for the clean of the graphic chart(empty actors and events lists of state)
 handle_info({et,clear_all},S)->
-    et_collector:clear_table(S#state.collector_pid),
-    {Unknown,_}=lists:split(1,S#state.actors),
-    S2=clear_canvas(S#state{actors=Unknown}),
-    noreply(S2);
+    case length(queue_to_list(S#state.events)) of
+        0->noreply(S);
+        _N->
+            et_collector:clear_table(S#state.collector_pid),
+            {Unknown,_}=lists:split(1,S#state.actors),
+            S2=clear_canvas(S#state{actors=Unknown}),
+            noreply(S2)
+    end;
 %%
 handle_info({et, {display_mode, _Mode}}, S) ->
     %% Kept for backward compatibility

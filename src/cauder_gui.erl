@@ -886,7 +886,14 @@ loop() ->
           case whereis(tracer) of% check if the tracer is already active
               undefined->%if not
                   Pid=spawn(tracer,init,[]),%%spawn it
-                  register(tracer,Pid);%and register it
+                  register(tracer,Pid),%and register it
+                  case ets:member(?GUI_REF,?SYSTEM) of %check if the trace store exists
+                    false->%% if there isn't no trace info stored,do nothing
+                      ok;
+                    true->%else send the reversed trace infos to the graphic tracer
+                      System=ref_lookup(?SYSTEM),
+                      Pid ! {show,lists:reverse(System#sys.trace)}
+                  end;
               TracerPid->%if yes
                   TracerPid ! close% close it
           end,

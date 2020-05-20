@@ -22,26 +22,25 @@ parseTrace(ListTrace,#trace{type=Type,from=From,to=To,val=Val,time=Time})->
 
 init()->%%initialize the tracer
 	{ok,CollectorPid}=et_collector:start_link([]),
-	{ok,Viewer}=et_viewer:start([{max_actors,20},{collector_pid,CollectorPid},{async,true},{async_patterns,{?RULE_SPAWN,?RULE_SEND,?RULE_RECEIVE,exit}}]),
-	showingTrace(CollectorPid,Viewer,[]).
+	et_viewer:start([{max_actors,20},{collector_pid,CollectorPid},{async,true},{async_patterns,{?RULE_SPAWN,?RULE_SEND,?RULE_RECEIVE,exit}}]),
+	showingTrace(CollectorPid,[]).
 
 
-showingTrace(CollectorPid,Viewer,LastTrace)->%%start receive message for handle the viewer
+showingTrace(CollectorPid,LastTrace)->%%start receive message for handle the viewer
 	receive
 		{show,ListTrace} when is_list(ListTrace)->
 			case ListTrace==LastTrace of %I compare the incoming list with the last list
 				true->% if they are the same except the last one and I don't change the graphics
-					showingTrace(CollectorPid,Viewer,ListTrace);
+					showingTrace(CollectorPid,ListTrace);
 				false-> %otherwise I save it, as the events appear, I empty the collector's events and re-fill it
 					ParsedTrace=[parseTrace(ListTrace,Trace)||Trace<-ListTrace],
-	    			et_collector:multicast(CollectorPid,clear_all),%%%%RESET THE VIEWER GRAPHIC CHART		
+					et_collector:multicast(CollectorPid,clear_all),%%%%RESET THE VIEWER GRAPHIC CHART
 					[showEvent(CollectorPid,Item)||Item<-ParsedTrace],%%FILL VIEWER EVENTS
-					showingTrace(CollectorPid,Viewer,ListTrace)
+					showingTrace(CollectorPid,ListTrace)
 			end;
 		close->
-			exit(Viewer,kill),
 			exit(CollectorPid,kill);
 		_->
-			io:fwrite("I DIDN'T UNDERSTAND MESSAGGE YOU SENT ME!~n"),
-			showingTrace(CollectorPid,Viewer,LastTrace)
+			io:fwrite("I DIDN'T UNDERSTAND THE MESSAGE YOU SENT ME!~n"),
+			showingTrace(CollectorPid,LastTrace)
 	end.
