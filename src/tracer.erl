@@ -39,7 +39,7 @@ showingTrace(CollectorPid,LastTrace)->%%start receive message for handle the vie
 					showingTrace(CollectorPid,ListTrace)
 			end;
 		close->
-			exit(CollectorPid,kill);
+			et_collector:stop(CollectorPid);
 		_->
 			io:fwrite("I DIDN'T UNDERSTAND THE MESSAGE YOU SENT ME!~n"),
 			showingTrace(CollectorPid,LastTrace)
