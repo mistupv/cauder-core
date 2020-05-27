@@ -444,14 +444,14 @@ handle_info({et, refresh}, S) ->
     S2 = revert_main_window(S),
     noreply(S2);
 %%%%handle a message for the clean of the graphic chart(empty actors and events lists of state)
-handle_info({et,clear_all},S)->
+handle_info({et,clean_all},S)->
     case length(queue_to_list(S#state.events)) of
-        0->noreply(S);
-        _N->
-            et_collector:clear_table(S#state.collector_pid),
-            {Unknown,_}=lists:split(1,S#state.actors),
-            S2=clear_canvas(S#state{actors=Unknown}),
-            noreply(S2)
+    0->noreply(S);
+    _N->
+        et_collector:clear_table(S#state.collector_pid),
+        {Unknown,_}=lists:split(1,S#state.actors),
+        S2=clear_canvas(S#state{actors=Unknown}),
+        noreply(S2)
     end;
 %%
 handle_info({et, {display_mode, _Mode}}, S) ->
@@ -1236,18 +1236,6 @@ open_viewer(Scale, FilterName, Actors, S) ->
 				     [?MODULE, Reason])
     end.
 
-getAsyncPatternsKeys(AsyncPattern)->
-    case AsyncPattern of
-        undefined->
-            undefined;
-        Map->
-            L=maps:to_list(AsyncPattern),
-            {Spawn,spawn}=lists:keyfind(spawn,2,L),
-            {Send,send}=lists:keyfind(send,2,L),
-            {Receive,'receive'}=lists:keyfind('receive',2,L),
-            {Exit,exit}=lists:keyfind(exit,2,L),
-            {Spawn,Send,Receive,Exit}
-    end.
 %%%----------------------------------------------------------------------
 %%% Handle graphics
 %%%----------------------------------------------------------------------
@@ -1679,15 +1667,15 @@ draw_named_arrow(Label, FromName, ToName, FromPos, ToPos, E, S, DC) ->
                         draw_label(Label, FromName, ToName, FromPos, ToPos, S3, DC);
                     'receive'->
                         S3=draw_arrow(FromPos,FromPos,S2,DC),
-                        draw_label(Label, FromName, ToName, FromPos, FromPos, S3, DC),
                         MirrorSendPos=cercaSpec(E#e.event,queue_to_list(S3#state.events),S3),
                         case MirrorSendPos==null of
                             false->
                                 FromPosY=Y-((E#e.pos-MirrorSendPos)*?incr_y*S3#state.scale),
                                 S4=draw_arrow_async(FromPos,FromPosY,ToPos, S3, DC),
+                                delete_label("send",ToPos,ToPos,FromPosY, S3, DC),
                                 S4;
                             true->%handles the case in which there is a receive before a send !! (it should never occur)
-                                S3
+                                draw_label(Label, FromName, ToName, FromPos, FromPos, S3, DC)
                         end;
                     send->
                         S3=draw_arrow(FromPos,FromPos,S2,DC),
@@ -1706,6 +1694,29 @@ draw_named_arrow(Label, FromName, ToName, FromPos, ToPos, E, S, DC) ->
         end
     end.
 %%FUNCTIONS OF ASYNC BEHAVIOUR OF GRAPHIC CHART%%%%%%%%
+
+delete_label(Label,FromPos, ToPos,PosY, S, DC) ->
+    Color= ?wxWHITE,
+    Scale = S#state.scale,
+    X = lists:min([FromPos, ToPos]) + (6 * Scale),
+    Y = PosY,
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
+    S.
+
+getAsyncPatternsKeys(AsyncPattern)->
+    case AsyncPattern of
+        undefined->
+            undefined;
+        Map->
+            L=maps:to_list(AsyncPattern),
+            {Spawn,spawn}=lists:keyfind(spawn,2,L),
+            {Send,send}=lists:keyfind(send,2,L),
+            {Receive,'receive'}=lists:keyfind('receive',2,L),
+            {Exit,exit}=lists:keyfind(exit,2,L),
+            {Spawn,Send,Receive,Exit}
+    end.
 
  keepAlive(S,EventSpawn,DC)->%used when scrolling,to keep alive already alive actors
     {FromPos,ToPos}={getActorFromPos(S#state.actors,EventSpawn,0),getActorToPos(S#state.actors,EventSpawn,0)},
@@ -1764,12 +1775,12 @@ draw_lifeline(S,LineTopY,NumActor,DC)->%draws the big green line of life of an a
     wxDC:drawLines(DC, [{LineX, LineTopY}, {LineX, LineBotY}]),
     wxPen:setWidth(S#state.pen,1).
 
- %%Algorithm looks for mirror event
+ %%Algorithm looks for mirror events
 cercaSpec(Event,Events,S)->%Taken as input the receive event and the queue of all events, look for the mirror send!
     %% ATTENTION, I CAN HAVE MORE EQUAL SENDS
     %Creates the list of event (s) mirroring to the receive in question
     Send=maps:get(send,S#state.async_patterns),%the send label according to the asynchronous communication pattern
-    Receive=maps:get('receive',S#state.async_patterns),%the receive label according to the asynchronous communication pattern
+    Receive=Event#event.label,
     %% Create the mirror sends list
     EventsSpec=[{Pos,Key,Spec}||{e,Pos,Key,Spec}<-Events,Spec#event.label==Send,Event#event.from==Spec#event.to,
                 Event#event.to==Spec#event.from,Event#event.contents==Spec#event.contents],

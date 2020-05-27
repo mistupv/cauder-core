@@ -34,7 +34,7 @@ showingTrace(CollectorPid,LastTrace)->%%start receive message for handle the vie
 					showingTrace(CollectorPid,ListTrace);
 				false-> %otherwise I save it, as the events appear, I empty the collector's events and re-fill it
 					ParsedTrace=[parseTrace(ListTrace,Trace)||Trace<-ListTrace],
-					et_collector:multicast(CollectorPid,clear_all),%%%%RESET THE VIEWER GRAPHIC CHART
+					et_collector:multicast(CollectorPid,clean_all),%%%%RESET THE VIEWER GRAPHIC CHART
 					[showEvent(CollectorPid,Item)||Item<-ParsedTrace],%%FILL VIEWER EVENTS
 					showingTrace(CollectorPid,ListTrace)
 			end;
