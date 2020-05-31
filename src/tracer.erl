@@ -5,8 +5,13 @@
 pp(CoreForm) -> lists:flatten(core_pp:format(CoreForm)).
 
 %%convert from trace record to report for collector
-showEvent(CollectorPid,#trace{type=Type,from=From,to=To,val=Val,time=_Time})->
-	et_collector:report_event(CollectorPid,85,From,To,Type,Val).
+showEvent(CollectorPid,#trace{type=Type,from=From,to=To,val=Val,time=Time})->
+	case Type of
+		?RULE_SPAWN->
+			et_collector:report_event(CollectorPid,85,From,To,Type,Val);
+		_->
+			et_collector:report_event(CollectorPid,85,From,To,Type,Val++" ("++integer_to_list(Time)++")")
+	end.
 
 %%cit converts the FIELDS of the trace into human-readable form and in the receive case, it associates its sender
 parseTrace(ListTrace,#trace{type=Type,from=From,to=To,val=Val,time=Time})->

@@ -1671,9 +1671,9 @@ draw_named_arrow(Label, FromName, ToName, FromPos, ToPos, E, S, DC) ->
                         case MirrorSendPos==null of
                             false->
                                 FromPosY=Y-((E#e.pos-MirrorSendPos)*?incr_y*S3#state.scale),
+                                drawTest(E#e.event#event.contents,FromPos,ToPos,FromPosY,S3,DC),
                                 S4=draw_arrow_async(FromPos,FromPosY,ToPos, S3, DC),
-                                delete_label("send",ToPos,ToPos,FromPosY, S3, DC),
-                                S4;
+                                delete_label("send",ToPos,ToPos,FromPosY, S4, DC);
                             true->%handles the case in which there is a receive before a send !! (it should never occur)
                                 draw_label(Label, FromName, ToName, FromPos, FromPos, S3, DC)
                         end;
@@ -1695,14 +1695,74 @@ draw_named_arrow(Label, FromName, ToName, FromPos, ToPos, E, S, DC) ->
     end.
 %%FUNCTIONS OF ASYNC BEHAVIOUR OF GRAPHIC CHART%%%%%%%%
 
+getMediumPoint({Xa,Ya},{Xb,Yb})->
+    Xm=round((Xa+Xb)/2),
+    Ym=round((Ya+Yb)/2),
+    {Xm,Ym}.
+
+dist2Points({Xa,Ya},{Xb,Yb})->
+    round(math:sqrt(math:pow((Xb-Xa),2)+math:pow((Yb-Ya),2))).
+
+
+normalize(Text,MedPoint,SecondMed,SupPoint,TextLen,CharWidth)->
+    MedBetweenMedSup=getMediumPoint(MedPoint,SupPoint),
+    Delta=round((TextLen-dist2Points(SecondMed,MedBetweenMedSup))/CharWidth),
+    {Mess,NumMess}=lists:split(length(Text)-3,Text),
+    FinalLen=round((TextLen/CharWidth)-Delta),
+    NewText=string:slice(Mess,0,FinalLen-3),
+    NewText++"..."++NumMess.
+
+calcTextPoints(Text,Len,MedPoint,InfPoint,SupPoint,CharWidth)->
+    SecondMed=getMediumPoint(MedPoint,InfPoint),
+    LenToSup=dist2Points(MedPoint,SecondMed),
+    LenBetweenMeds=dist2Points(SecondMed,SupPoint),
+    if 
+        Len=<LenToSup->
+                calcTextPoints(Text,Len,MedPoint,SecondMed,SupPoint,CharWidth);
+        LenBetweenMeds =< Len->
+                {normalize(Text,MedPoint,SecondMed,SupPoint,Len,CharWidth),SecondMed};
+        true->
+            {Text,SecondMed}
+    end.
+   
+drawTest(Text,FromPos,ToPos,FromPosY,S,DC)->
+    io:fwrite("FOREGROUND COLOR: ~p~n",[wxDC:getTextForeground(DC)]),
+    Const=6*S#state.scale,
+    CharWidth=wxDC:getCharWidth(DC),
+    TextLen=length(Text)*CharWidth,
+    case FromPos<ToPos of%check if the send is more right than receive
+        true->
+        %This piece of code,obtain the two point of the parallel rect to the async arrow(to stay a little bit up from the arrow!!!)
+        %and calculate IT medium point
+            ParallelSendPoint={ToPos-Const,FromPosY-Const},
+            ParallelReceivePoint={FromPos-Const,S#state.y_pos-Const},
+            MedStart=getMediumPoint(ParallelReceivePoint,ParallelSendPoint),
+            {NewText,{TextX,TextY}}=calcTextPoints(Text,TextLen,MedStart,ParallelReceivePoint,ParallelSendPoint,CharWidth),
+        %
+            Radians = calc_angle({FromPos, FromPosY}, {ToPos,S#state.y_pos});%Point A=Send Point B=Receive
+        false->
+            ParallelSendPoint={ToPos+Const,FromPosY-Const},
+            ParallelReceivePoint={FromPos+Const,S#state.y_pos-Const},
+            MedStart=getMediumPoint(ParallelReceivePoint,ParallelSendPoint),
+            {NewText,{TextX,TextY}}=calcTextPoints(Text,TextLen,MedStart,ParallelSendPoint,ParallelReceivePoint,CharWidth),
+            Radians=calc_angle({ToPos,S#state.y_pos},{FromPos, FromPosY})%Point A=Receive Point B=Send
+    end,
+    Angle=Radians*180/3.14,%obtain value angle in degree
+    wxDC:setFont(DC,S#state.normal_font),
+    wxDC:setTextForeground(DC,?wxBLUE),
+    wxDC:drawRotatedText(DC,NewText,{TextX,TextY},Angle),
+    S.
+
 delete_label(Label,FromPos, ToPos,PosY, S, DC) ->
     Color= ?wxWHITE,
     Scale = S#state.scale,
     X = lists:min([FromPos, ToPos]) + (6 * Scale),
     Y = PosY,
-    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
-    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
-    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),%%
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),% I use it like a text cleaner
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),%%
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),%%
+    write_text(Label, X, Y, Color, S#state.normal_font, S, DC),%%
     S.
 
 getAsyncPatternsKeys(AsyncPattern)->
