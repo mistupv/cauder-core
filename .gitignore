@@ -1,3 +1,5 @@
 .DS_Store
 *.beam
-
+*.tex
+*.log
+*.aux
