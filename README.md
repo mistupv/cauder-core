@@ -19,8 +19,8 @@ Then, execute the script *cauder.sh* to start CauDEr
 ```
 An astonishing graphical interface will appear in your screen.
 
-![GUI screenshot](https://github.com/mistupv/cauder/blob/screens/cauder.png?raw=true)
+![GUI screenshot](https://github.com/mistupv/cauder-core/blob/screens/cauder.png)
 
 ## How to use
 
-Check the [Wiki](https://github.com/mistupv/cauder/wiki) for information on how to use CauDEr.
+Check the [Wiki](https://github.com/mistupv/cauder-core/wiki) for information on how to use CauDEr.
